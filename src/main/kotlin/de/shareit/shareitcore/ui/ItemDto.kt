@@ -7,12 +7,14 @@ data class ItemDto(
     var title: String,
     var description: String?,
     var price: BigDecimal?,
+    var email: String? = null
 
+    ) {
+    fun toEntity(): Item =
+        Item(
+            title = this.title,
+            description = this.description,
+            price = this.price
+        )
 
-    )
-fun ItemDto.toEntity(): Item =
-    Item(
-        title = this.title,
-        description = this.description,
-        price = this.price
-    )
+}

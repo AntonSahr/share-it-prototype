@@ -1,6 +1,7 @@
 package de.shareit.shareitcore.application
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.service.UserRepository
+import jakarta.transaction.Transactional
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
@@ -25,25 +26,17 @@ open class UserService(
 
         val registrationId = request.clientRegistration.registrationId
 
-        // Dynamisch den key holen
         val userNameAttributeName = request
             .clientRegistration
             .providerDetails
             .userInfoEndpoint
             .userNameAttributeName
 
-        // providerId aus genau diesem Attribut lesen
         val providerId = attributes[userNameAttributeName]
             ?.toString()
             ?: throw IllegalArgumentException("Unknown user id attribute '$userNameAttributeName'")
 
-        // Email (kann für GitHub null sein!)
         val email = attributes["email"] as? String
-
-        // Wenn Du E-Mail zwingend brauchst, wirf eine Exception oder hol sie nach:
-        // if (email == null && request.clientRegistration.registrationId == "github") {
-        //   // Call /user/emails API nach
-        // }
 
         val user = userRepo
             .findByOauthProviderAndProviderId(registrationId, providerId)
@@ -58,7 +51,6 @@ open class UserService(
 
         val authorities = user.roles.map(::SimpleGrantedAuthority)
 
-        // Hier als dritten Parameter den dynamischen key verwenden!
         return DefaultOAuth2User(
             authorities,
             attributes,
@@ -66,4 +58,21 @@ open class UserService(
         )
     }
 
+    fun findEmailByProvider(provider: String, providerId: String): String? {
+        return userRepo
+            .findByOauthProviderAndProviderId(provider, providerId)
+            ?.email
+    }
+
+    @Transactional
+    fun updateEmailForUser(provider: String, providerId: String, newEmail: String) {
+        val user = userRepo
+            .findByOauthProviderAndProviderId(provider, providerId)
+            ?: throw IllegalArgumentException("Unbekannter User beim E-Mail-Update")
+        if (!newEmail.contains("@")) {
+            throw IllegalArgumentException("Ungültige E-Mail-Adresse")
+        }
+        user.email = newEmail
+        userRepo.save(user)
+    }
 }
