@@ -75,4 +75,19 @@ open class UserService(
         user.email = newEmail
         userRepo.save(user)
     }
+
+    fun findDisplayNameByProvider(provider: String, providerId: String): String? {
+        return userRepo
+            .findByOauthProviderAndProviderId(provider, providerId)
+            ?.displayName
+    }
+
+    @Transactional
+    fun updateDisplayNameForUser(provider: String, providerId: String, newDisplayName: String) {
+        val user = userRepo
+            .findByOauthProviderAndProviderId(provider, providerId)
+            ?: throw IllegalArgumentException("Unbekannter User beim Namen-Update")
+        user.displayName = newDisplayName
+        userRepo.save(user)
+    }
 }

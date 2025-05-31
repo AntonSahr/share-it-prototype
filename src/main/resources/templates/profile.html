@@ -33,7 +33,7 @@
             </div>
             <div>
                 <label>Anzeige-Name:</label>
-                <span th:text="${displayName} ?: 'Nicht verfügbar'">[Anzeige-Name]</span>
+                <span th:text="${userDto.displayName} ?: 'Nicht verfügbar'">[Anzeige-Name]</span>
             </div>
             <div>
                 <label>Aktuelle E-Mail:</label>
@@ -48,7 +48,7 @@
         <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
 
         <!-- Formular zum Bearbeiten der E-Mail -->
-        <form th:action="@{/profile}"
+        <form th:action="@{/profile/update/email}"
               th:object="${userDto}"
               method="post"
               class="profile-form">
@@ -58,6 +58,29 @@
                        id="email"
                        th:field="*{email}"
                        placeholder="Neue E-Mail eingeben"
+                       required />
+            </div>
+            <div>
+                <button type="submit">Speichern</button>
+            </div>
+        </form>
+
+        <h3>Anzeigename Hinzufügen / bearbeiten</h3>
+
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
+
+        <!-- Formular zum Bearbeiten der E-Mail -->
+        <form th:action="@{/profile/update/displayname}"
+              th:object="${userDto}"
+              method="post"
+              class="profile-form">
+            <div>
+                <label for="displayname">Neuer Anzeigename:</label>
+                <input type="text"
+                       id="displayname"
+                       th:field="*{displayName}"
+                       placeholder="Neuer Anzeigename eingeben"
                        required />
             </div>
             <div>
