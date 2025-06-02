@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Startseite – Alle Listings</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+</head>
+<body>
+<header>
+    <h1>ShareIt – Alle Listings</h1>
+    <!-- Keine Suchleiste auf der Landing‐Page -->
+</header>
+
+<main>
+    <section>
+        <h2>Verfügbare Items</h2>
+
+        <div th:if="${#lists.isEmpty(itemList)}">
+            <p>Zurzeit sind keine Items verfügbar.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(itemList)}">
+            <ul>
+                <li th:each="item : ${itemList}">
+                    <article class="item-card">
+                        <!-- Beispiel: Thumbnail, Titel, Preis -->
+                        <div class="thumbnail">
+                            <img th:if="${item.thumbnailUrl != null}"
+                                 th:src="@{${item.thumbnailUrl}}"
+                                 alt="Thumbnail für [[${item.title}]]" />
+                            <div th:if="${item.thumbnailUrl == null}" class="no-image">kein Bild</div>
+                        </div>
+
+                        <div class="info">
+                            <h3 th:text="${item.title}">Titel</h3>
+
+                            <p>
+                                <span th:text="${item.priceAmount}">0.00</span>
+                                <span th:text="${item.priceUnit.toLowerCase()}">€/tag</span>
+                            </p>
+
+                            <p th:if="${item.address != null}">
+                                <strong>Adresse:</strong>
+                                <span th:text="${item.address}">Musterstraße 1</span>
+                            </p>
+
+                            <a th:href="@{'/items/' + ${item.id}}" class="details-link">
+                                Details ansehen
+                            </a>
+                        </div>
+                    </article>
+                </li>
+            </ul>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 ShareIt</p>
+</footer>
+</body>
+</html>
