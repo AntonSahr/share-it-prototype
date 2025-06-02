@@ -1,18 +1,68 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Items</title>
+    <meta charset="UTF-8" />
+    <title>Alle Items – ShareIt</title>
+    <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
-<h1>Alle Items</h1>
-<table>
-    <tr><th>ID</th><th>Titel</th><th>Preis/Stunde</th></tr>
-    <tr th:each="item : ${items}">
-        <td th:text="${item.id}"></td>
-        <td th:text="${item.title}"></td>
-        <td th:text="${item.price}"></td>
-    </tr>
-</table>
-<a th:href="@{/items/new}">Neues Item</a>
+<header>
+    <div class="header-container">
+        <h1><a th:href="@{/}">ShareIt</a></h1>
+        <nav>
+            <ul>
+                <li><a th:href="@{/}">Startseite</a></li>
+                <li><a th:href="@{/items}" class="active">Angebote</a></li>
+                <li><a th:href="@{/items/new}">Neues Item</a></li>
+                <li><a th:href="@{/profile}">Profil</a></li>
+                <li><a th:href="@{/logout}">Abmelden</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <section>
+        <h2>Alle angebotenen Items</h2>
+        <div th:if="${items.isEmpty()}">
+            <p>Keine Items gefunden. <a th:href="@{/items/new}">Erstelle das erste Item</a>.</p>
+        </div>
+        <table th:if="${!items.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Titel</th>
+                <th>Beschreibung</th>
+                <th>Preis</th>
+                <th>Besitzer</th>
+                <th>Aktionen</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${items}">
+                <td>
+                    <a th:href="@{|/items/${item.id}|}" th:text="${item.title}">Beispiel-Titel</a>
+                </td>
+                <td th:text="${item.description} ?: '-'">Keine Beschreibung</td>
+                <td>
+                    <span th:text="${item.priceAmount}">0.00</span>
+                    <span th:text="${item.priceUnit.name().toLowerCase()}">daily</span>
+                </td>
+                <td th:text="${item.ownerDisplayName} ?: 'Unbekannt'">Besitzer</td>
+                <td>
+                    <a th:href="@{|/items/${item.id}/edit|}">Bearbeiten</a>
+                    &nbsp;|&nbsp;
+                    <form th:action="@{|/items/${item.id}/delete|}" method="post" style="display:inline">
+                        <button type="submit" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 ShareIt</p>
+</footer>
 </body>
 </html>

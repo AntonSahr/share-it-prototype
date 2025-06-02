@@ -1,29 +1,232 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Neues Item anlegen</title>
-    <link rel="stylesheet" href="/css/styles.css" /> <!-- optional CSS -->
+    <meta charset="UTF-8" />
+    <title>Item-Formular mit Karte</title>
+    <!-- 1) Leaflet CSS OHNE integrity/crossorigin -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Der Karte muss explizit eine Höhe zugewiesen werden! */
+        #map {
+            height: 350px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .error {
+            color: red;
+            font-size: 0.9rem;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .actions {
+            margin-top: 1.5rem;
+        }
+    </style>
 </head>
 <body>
-<h1>Neues Item anlegen</h1>
-<form th:action="@{/items}" th:object="${itemDto}" method="post">
-    <div>
-        <label for="title">Titel:</label>
-        <input type="text" id="title" th:field="*{title}" placeholder="Titel eingeben" required />
+<header>
+    <div class="header-container">
+        <h1><a th:href="@{/}">ShareIt</a></h1>
+        <nav>
+            <ul>
+                <li><a th:href="@{/}">Startseite</a></li>
+                <li><a th:href="@{/items}">Angebote</a></li>
+                <li><a th:href="@{/items/new}" th:classappend="${itemId == null} ? 'active' : ''">Neues Item</a></li>
+                <li><a th:href="@{/profile}">Profil</a></li>
+                <li><a th:href="@{/logout}">Abmelden</a></li>
+            </ul>
+        </nav>
     </div>
-    <div>
-        <label for="description">Beschreibung:</label>
-        <textarea id="description" th:field="*{description}" placeholder="Beschreibung eingeben" rows="5"></textarea>
-    </div>
-    <div>
-        <label for="price">Preis:</label>
-        <input type="number" id="price" th:field="*{price}" placeholder="Preis eingeben" step="0.01" min="0" required />
-    </div>
-    <div>
-        <button type="submit">Speichern</button>
-        <a th:href="@{/items}">Abbrechen</a>
-    </div>
-</form>
+</header>
+
+<main>
+    <section>
+        <h2 th:text="${itemId != null} ? 'Item bearbeiten' : 'Neues Item'">Item-Formular</h2>
+
+        <!-- Fehlermeldung, z. B. wenn nicht eingeloggt -->
+        <div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
+
+        <form th:action="@{${itemId != null} ? '/items/' + ${itemId} + '/edit' : '/items/new'}"
+              th:object="${itemDto}"
+              th:method="post">
+            <!-- CSRF-Token wird automatisch eingefügt -->
+            <input type="hidden" th:if="${itemId != null}" th:name="itemId" th:value="${itemId}" />
+
+            <div class="form-group">
+                <label for="title">Titel:</label>
+                <input type="text"
+                       id="title"
+                       th:field="*{title}"
+                       placeholder="Titel eingeben"
+                       required />
+                <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Beschreibung:</label>
+                <textarea id="description"
+                          th:field="*{description}"
+                          placeholder="Beschreibung eingeben"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="priceAmount">Preis (Zahl):</label>
+                <input type="number"
+                       id="priceAmount"
+                       th:field="*{priceAmount}"
+                       step="0.01"
+                       placeholder="z. B. 12.50"
+                       required />
+                <div th:if="${#fields.hasErrors('priceAmount')}" th:errors="*{priceAmount}" class="error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="priceUnit">Preiseinheit:</label>
+                <select id="priceUnit" th:field="*{priceUnit}" required>
+                    <option th:each="unit : ${T(de.shareit.shareitcore.domain.model.PriceUnit).values()}"
+                            th:value="${unit}"
+                            th:text="${unit.name()}">HOURLY</option>
+                </select>
+                <div th:if="${#fields.hasErrors('priceUnit')}" th:errors="*{priceUnit}" class="error"></div>
+            </div>
+
+            <!-- Adresseingabe -->
+            <div class="form-group">
+                <label for="address">Adresse:</label>
+                <input type="text"
+                       id="address"
+                       th:field="*{address}"
+                       placeholder="z. B. Straße, PLZ, Ort" />
+                <div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="error"></div>
+            </div>
+
+            <!-- Karte -->
+            <div class="form-group">
+                <label>Karte (klicke, um Pin zu setzen):
+                    <span th:if="${itemDto.latitude != null and itemDto.longitude != null}">
+              (aktuelle Position:
+                <span th:text="${itemDto.latitude}">0.0</span>,
+                <span th:text="${itemDto.longitude}">0.0</span>
+              )
+            </span>
+                </label>
+                <div id="map"></div>
+            </div>
+
+            <!-- Versteckte Felder für Koordinaten -->
+            <input type="hidden" id="latitude" th:field="*{latitude}" />
+            <input type="hidden" id="longitude" th:field="*{longitude}" />
+
+            <div class="actions">
+                <button type="submit" th:text="${itemId != null} ? 'Aktualisieren' : 'Erstellen'">Speichern</button>
+                <a th:href="@{/items}" style="margin-left:1rem;">Abbrechen</a>
+            </div>
+        </form>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 ShareIt</p>
+</footer>
+
+<!-- 2) Leaflet JS OHNE integrity/crossorigin -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // 1) Thymeleaf greift auf itemDto.latitude / longitude zu – gibt 'null' oder 'Zahlenwert'
+    var rawLat = [[${itemDto.latitude}]];   // → z. B. "null" oder 52.5219180
+    var rawLon = [[${itemDto.longitude}]];  // → z. B. "null" oder 13.4132150
+
+    // 2) Fallback, falls rawLat/rawLon null sind
+    var itemLat = (rawLat != null) ? rawLat : 52.5200;
+    var itemLon = (rawLon != null) ? rawLon : 13.4050;
+
+    // 3) Leaflet‐Karte initialisieren
+    var map = L.map('map').setView([itemLat, itemLon], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // 4) Wenn Koordinaten schon vorhanden sind → Marker sofort setzen
+    var marker = null;
+    if (rawLat != null && rawLon != null) {
+        marker = L.marker([itemLat, itemLon], { draggable: true }).addTo(map);
+        marker.on('moveend', onMarkerMoved);
+    }
+
+    // 5) Hilfsfunktion: Marker erstellen oder verschieben
+    function setMarker(lat, lon) {
+        if (marker) {
+            marker.setLatLng([lat, lon]);
+        } else {
+            marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+            marker.on('moveend', onMarkerMoved);
+        }
+    }
+
+    // 6) Klick auf Karte: Marker setzen + versteckte Inputs befüllen + Reverse-Geocoding
+    function onMapClick(e) {
+        var lat = e.latlng.lat.toFixed(7);
+        var lon = e.latlng.lng.toFixed(7);
+        setMarker(lat, lon);
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+        // optionales Reverse-Geocoding, um das Adressfeld automatisch zu befüllen:
+        fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('address').value = data.display_name;
+                }
+            })
+            .catch(err => console.warn('Reverse-Geocoding fehlgeschlagen:', err));
+    }
+    map.on('click', onMapClick);
+
+    // 7) Wenn Marker verschoben (Drag), aktualisiere Koordinaten + Adresse
+    function onMarkerMoved(e) {
+        var pos = e.target.getLatLng();
+        var lat = pos.lat.toFixed(7);
+        var lon = pos.lng.toFixed(7);
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = lon;
+        fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lon)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    document.getElementById('address').value = data.display_name;
+                }
+            })
+            .catch(err => console.warn('Reverse-Geocoding fehlgeschlagen:', err));
+    }
+    /*]]>*/
+</script>
 </body>
 </html>
