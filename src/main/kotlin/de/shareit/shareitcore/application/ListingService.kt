@@ -12,7 +12,8 @@ import java.time.Instant
 @Service
 class ListingService(
     private val itemRepository: ItemRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val geocodingService: GeocodingService
 ) {
     /**
      * Neues Item für ownerId anlegen.
@@ -23,6 +24,9 @@ class ListingService(
         val owner = userRepository.findById(ownderId)
             .orElseThrow { RuntimeException("Owner mit ID $ownderId nicht gefunden") }
 
+        val (lat, lon) = geocodingService.geocode(dto.address?: "")
+            ?: Pair(null, null)
+
         val item = Item(
             title = dto.title,
             description = dto.description,
@@ -30,7 +34,10 @@ class ListingService(
             priceUnit = dto.priceUnit,
             owner = owner,
             createdAt = Instant.now(),
-            updatedAt = Instant.now()
+            updatedAt = Instant.now(),
+            longitude = lon,
+            latitude = lat,
+            address = dto.address,
         )
 
         val saved = itemRepository.save(item)
@@ -48,6 +55,17 @@ class ListingService(
 
         if (item.owner.id != ownerId) {
             throw IllegalArgumentException("Nur der Owner kann dieses Item ändern")
+        }
+
+        if (dto.address.isNullOrBlank()) {
+            val (lat, lon) = geocodingService.geocode(dto.address!!) ?: Pair(null, null)
+            item.latitude = lat
+            item.longitude = lon
+            item.address = dto.address
+        } else {
+            item.latitude = null
+            item.longitude = null
+            item.address = null
         }
 
         item.title = dto.title
@@ -114,7 +132,10 @@ class ListingService(
             ownerId = item.owner.id!!,
             ownerDisplayName = item.owner.displayName,
             createdAt = item.createdAt,
-            updatedAt = item.updatedAt
+            updatedAt = item.updatedAt,
+            longitude = item.longitude,
+            latitude = item.latitude,
+            address = item.address
         )
     }
 }

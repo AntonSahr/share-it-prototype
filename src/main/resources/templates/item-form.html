@@ -74,9 +74,21 @@
             </div>
 
             <div>
+                <label for="address">Adresse :</label>
+                <input type="text"
+                       id="address"
+                       th:field="*{address}"
+                       placeholder="z. B. Straße, PLZ, Ort"
+                       required />
+                <div th:if="${#fields.hasErrors('address')}" th:errors="*{address}" class="error"></div>
+            </div>
+
+            <div>
                 <button type="submit" th:text="${itemId != null} ? 'Aktualisieren' : 'Erstellen'">Speichern</button>
                 <a th:href="@{/items}">Abbrechen</a>
             </div>
+
+
         </form>
     </section>
 </main>

@@ -28,12 +28,20 @@ open class Item(
     @JoinColumn(name = "owner_id", nullable = false)
     open var owner: AppUser,
 
-
     @Column(name = "created_at", nullable = false, updatable = false)
     open var createdAt: Instant = Instant.now(),
 
     @Column(name = "updated_at", nullable = false)
-    open var updatedAt: Instant = Instant.now()
+    open var updatedAt: Instant = Instant.now(),
+
+    @Column(name = "latitude", precision = 10, scale = 7, nullable = true)
+    var latitude: BigDecimal? = null,
+
+    @Column(name = "longitude", precision = 10, scale = 7, nullable = true)
+    var longitude: BigDecimal? = null,
+
+    @Column(name = "address", length = 255, nullable = false)
+    open var address: String?,
 ) {
     protected constructor() : this(
         id = null,
@@ -43,7 +51,10 @@ open class Item(
         priceUnit = PriceUnit.DAILY,
         owner = AppUser(),
         createdAt = Instant.now(),
-        updatedAt = Instant.now()
+        updatedAt = Instant.now(),
+        latitude = null,
+        longitude = null,
+        address = null
     )
 }
 

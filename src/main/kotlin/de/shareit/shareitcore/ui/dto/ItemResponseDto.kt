@@ -13,5 +13,8 @@ data class ItemResponseDto(
     val ownerId: Long,
     val ownerDisplayName: String?,
     val createdAt: Instant,
-    val updatedAt: Instant
+    val updatedAt: Instant,
+    val latitude: BigDecimal?,
+    val longitude: BigDecimal?,
+    val address: String?
 )

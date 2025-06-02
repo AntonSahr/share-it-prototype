@@ -17,5 +17,9 @@ data class ItemDto(
     var priceAmount: BigDecimal,
 
     @field:NotNull(message = "Preiseinheit muss gesetzt sein")
-    var priceUnit: PriceUnit
+    var priceUnit: PriceUnit,
+
+    @field:NotNull(message = "Adresse darf nicht leer sein")
+    var address: String?,
+
 )

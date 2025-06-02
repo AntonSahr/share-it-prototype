@@ -2,6 +2,7 @@ package de.shareit.shareitcore.ui
 
 import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
+import de.shareit.shareitcore.domain.model.PriceUnit
 import de.shareit.shareitcore.domain.service.UserRepository
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.web.dto.ItemDto
@@ -39,7 +40,12 @@ class ItemWebController(
     fun showCreateForm(model: Model): String {
         model.addAttribute(
             "itemDto",
-            ItemDto("", null, 0.toBigDecimal(), de.shareit.shareitcore.domain.model.PriceUnit.DAILY)
+            ItemDto(
+                title = "",
+                description = null,
+                priceAmount = 0.toBigDecimal(),
+                priceUnit =  PriceUnit.DAILY,
+                address = "")
         )
         model.addAttribute("editMode", false)
         return "item-form"
@@ -105,7 +111,8 @@ class ItemWebController(
             title = existingDto.title,
             description = existingDto.description,
             priceAmount = existingDto.priceAmount,
-            priceUnit = existingDto.priceUnit
+            priceUnit = existingDto.priceUnit,
+            address = existingDto.address
         )
 
         model.addAttribute("itemDto", itemDto)
