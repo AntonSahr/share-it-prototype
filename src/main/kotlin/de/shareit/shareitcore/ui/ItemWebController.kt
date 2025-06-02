@@ -33,6 +33,14 @@ class ItemWebController(
         return "items"
     }
 
+
+    @GetMapping("/{id}")
+    fun showDetail(@PathVariable id: Long, model: Model): String {
+        val itemDto = listingService.findById(id)
+        model.addAttribute("item", itemDto)
+        return "item-detail"    // Name des Thymeleaf‐Templates (item-detail.html)
+    }
+
     /**
      * Formular für neues Item anzeigen.
      */

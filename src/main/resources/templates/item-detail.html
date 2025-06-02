@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      lang="de">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Detailansicht: ' + ${item.title}">Detailansicht: Item</title>
+
+    <!-- Leaflet CSS -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <style>
+        /* Basis-Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0; padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        header, footer {
+            background-color: #34495e;
+            color: white;
+            padding: 0.75rem 1.5rem;
+        }
+        header a, footer a {
+            color: white;
+            text-decoration: none;
+        }
+        header nav ul {
+            list-style: none;
+            margin: 0; padding: 0;
+            display: flex; gap: 1rem;
+        }
+        header nav li {
+            display: inline;
+        }
+        main {
+            max-width: 900px;
+            margin: 1.5rem auto;
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            margin: 0 0 1rem 0;
+            color: #2c3e50;
+        }
+        .field-label {
+            font-weight: bold;
+            margin-top: 0.75rem;
+        }
+        .field-value {
+            margin: 0.25rem 0 1rem 0;
+            padding-left: 0.5rem;
+            color: #555;
+        }
+        .actions {
+            margin-top: 1.5rem;
+            display: flex; gap: 1rem;
+        }
+        .actions a, .actions button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .actions a {
+            background-color: #3498db;
+            color: white;
+        }
+        .actions a:hover {
+            background-color: #2980b9;
+        }
+        .actions button.delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .actions button.delete:hover {
+            background-color: #c0392b;
+        }
+        /* Karte */
+        #detail-map {
+            height: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+        .no-location {
+            margin-top: 1rem;
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+<!-- ================= Header / Navigation ================= -->
+<header>
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h1><a th:href="@{/}" style="color: white;">ShareIt</a></h1>
+        <nav>
+            <ul>
+                <li><a th:href="@{/}">Startseite</a></li>
+                <li><a th:href="@{/items}">Angebote</a></li>
+                <li><a th:href="@{/items/new}">Neues Item</a></li>
+                <li><a th:href="@{/profile}">Profil</a></li>
+                <li><a th:href="@{/logout}">Abmelden</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- ================= Hauptbereich mit Detail-Information ================= -->
+<main>
+    <h2 th:text="'Detailansicht: ' + ${item.title}">Detailansicht: Titel</h2>
+
+    <!-- Titel des Items -->
+    <div>
+        <div class="field-label">Titel:</div>
+        <div class="field-value" th:text="${item.title}">Beispiel-Titel</div>
+    </div>
+
+    <!-- Beschreibung -->
+    <div th:if="${item.description != null}">
+        <div class="field-label">Beschreibung:</div>
+        <div class="field-value" th:text="${item.description}">Beispiel-Beschreibung</div>
+    </div>
+
+    <!-- Preiseinheit und Betrag -->
+    <div>
+        <span class="field-label">Preis:</span>
+        <span class="field-value">
+            <span th:text="${item.priceAmount}">0.00</span>
+            <span th:text="${item.priceUnit.name().toLowerCase()}">daily</span>
+        </span>
+    </div>
+
+    <!-- Eigentümer-Info -->
+    <div>
+        <div class="field-label">Anbieter:</div>
+        <div class="field-value"
+             th:text="${item.ownerDisplayName} + ' (ID: ' + ${item.ownerId} + ')'">
+            Max Mustermann (ID: 1)
+        </div>
+    </div>
+
+    <!-- Adresse (nur anzeigen, wenn nicht-leer) -->
+    <div th:if="${item.address != null and item.address != ''}">
+        <div class="field-label">Adresse:</div>
+        <div class="field-value" th:text="${item.address}">Musterstraße 1, 12345 Berlin</div>
+    </div>
+
+    <!-- Koordinaten -->
+    <div th:if="${item.latitude != null and item.longitude != null}">
+        <div class="field-label">Koordinaten (Lat, Lon):</div>
+        <div class="field-value"
+             th:text="${item.latitude} + ', ' + ${item.longitude}">
+            52.521918, 13.413215
+        </div>
+    </div>
+
+    <!-- Erstellungs- und Aktualisierungszeitpunkt -->
+    <div>
+        <div class="field-label">Erstellt am:</div>
+        <div class="field-value"
+             th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">
+            2025-06-02 14:30
+        </div>
+    </div>
+    <div>
+        <div class="field-label">Zuletzt aktualisiert:</div>
+        <div class="field-value"
+             th:text="${#temporals.format(item.updatedAt, 'yyyy-MM-dd HH:mm')}">
+            2025-06-10 09:15
+        </div>
+    </div>
+
+    <!-- Leaflet-Karte nur anzeigen, wenn Koordinaten vorhanden sind -->
+    <div th:if="${item.latitude != null and item.longitude != null}">
+        <div id="detail-map"></div>
+    </div>
+    <div th:if="${item.latitude == null or item.longitude == null}" class="no-location">
+        Keine Standortdaten verfügbar.
+    </div>
+
+    <!-- Aktionen: Bearbeiten / Löschen / Zurück -->
+    <div class="actions">
+        <a th:href="@{/items/{id}/edit(id=${item.id})}">Bearbeiten</a>
+        <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
+            <!-- CSRF-Token wird automatisch ergänzt -->
+            <button type="submit" class="delete"
+                    onclick="return confirm('Item wirklich löschen?');">
+                Löschen
+            </button>
+        </form>
+        <a th:href="@{/items}">Zurück zur Übersicht</a>
+    </div>
+</main>
+
+<!-- ================= Footer ================= -->
+<footer>
+    <p>&copy; 2025 ShareIt</p>
+</footer>
+
+<!-- ================= Leaflet JS ================= -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Prüfen, ob Koordinaten vorhanden sind
+    var lat = [[${item.latitude}]];     // → JavaScript-Literal oder null
+    var lon = [[${item.longitude}]];    // → JavaScript-Literal oder null
+
+    if (lat != null && lon != null) {
+        // Karte initialisieren
+        var map = L.map('detail-map').setView([lat, lon], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Marker auf item's Koordinate setzen
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup(/*[[${item.title}]]*/ "Titel")
+            .openPopup();
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
