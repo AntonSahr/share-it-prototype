@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserRepository : JpaRepository<AppUser, Long> {
     fun findByOauthProviderAndProviderId(provider: String, providerId: String): AppUser?
+    fun findByEmail(email: String): AppUser?
 }

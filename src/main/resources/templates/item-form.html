@@ -1,29 +1,88 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>Neues Item anlegen</title>
-    <link rel="stylesheet" href="/css/styles.css" /> <!-- optional CSS -->
+    <meta charset="UTF-8" />
+    <title th:text="${itemId != null} ? 'Item bearbeiten' : 'Neues Item'">Item-Formular</title>
+    <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
-<h1>Neues Item anlegen</h1>
-<form th:action="@{/items}" th:object="${itemDto}" method="post">
-    <div>
-        <label for="title">Titel:</label>
-        <input type="text" id="title" th:field="*{title}" placeholder="Titel eingeben" required />
+<header>
+    <div class="header-container">
+        <h1><a th:href="@{/}">ShareIt</a></h1>
+        <nav>
+            <ul>
+                <li><a th:href="@{/}">Startseite</a></li>
+                <li><a th:href="@{/items}">Angebote</a></li>
+                <li><a th:href="@{/items/new}" class="active">Neues Item</a></li>
+                <li><a th:href="@{/profile}">Profil</a></li>
+                <li><a th:href="@{/logout}">Abmelden</a></li>
+            </ul>
+        </nav>
     </div>
-    <div>
-        <label for="description">Beschreibung:</label>
-        <textarea id="description" th:field="*{description}" placeholder="Beschreibung eingeben" rows="5"></textarea>
-    </div>
-    <div>
-        <label for="price">Preis:</label>
-        <input type="number" id="price" th:field="*{price}" placeholder="Preis eingeben" step="0.01" min="0" required />
-    </div>
-    <div>
-        <button type="submit">Speichern</button>
-        <a th:href="@{/items}">Abbrechen</a>
-    </div>
-</form>
+</header>
+
+<main>
+    <section>
+        <h2 th:text="${itemId != null} ? 'Item bearbeiten' : 'Neues Item'">Item-Formular</h2>
+
+        <!-- Fehlermeldung, falls nicht eingeloggt -->
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <form th:action="@{${itemId != null} ? '/items/' + ${itemId} + '/edit' : '/items/new'}"
+              th:object="${itemDto}"
+              th:method="post">
+            <input type="hidden" th:if="${itemId != null}" th:name="itemId" th:value="${itemId}" />
+
+            <div>
+                <label for="title">Titel:</label>
+                <input type="text"
+                       id="title"
+                       th:field="*{title}"
+                       placeholder="Titel eingeben"
+                       required />
+                <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error"></div>
+            </div>
+
+            <div>
+                <label for="description">Beschreibung:</label>
+                <textarea id="description"
+                          th:field="*{description}"
+                          placeholder="Beschreibung eingeben"></textarea>
+            </div>
+
+            <div>
+                <label for="priceAmount">Preis (Zahl):</label>
+                <input type="number"
+                       id="priceAmount"
+                       th:field="*{priceAmount}"
+                       step="0.01"
+                       placeholder="z. B. 12.50"
+                       required />
+                <div th:if="${#fields.hasErrors('priceAmount')}" th:errors="*{priceAmount}" class="error"></div>
+            </div>
+
+            <div>
+                <label for="priceUnit">Preiseinheit:</label>
+                <select id="priceUnit" th:field="*{priceUnit}" required>
+                    <option th:each="unit : ${T(de.shareit.shareitcore.domain.model.PriceUnit).values()}"
+                            th:value="${unit}"
+                            th:text="${unit.name()}">
+                        HOURLY
+                    </option>
+                </select>
+                <div th:if="${#fields.hasErrors('priceUnit')}" th:errors="*{priceUnit}" class="error"></div>
+            </div>
+
+            <div>
+                <button type="submit" th:text="${itemId != null} ? 'Aktualisieren' : 'Erstellen'">Speichern</button>
+                <a th:href="@{/items}">Abbrechen</a>
+            </div>
+        </form>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 ShareIt</p>
+</footer>
 </body>
 </html>

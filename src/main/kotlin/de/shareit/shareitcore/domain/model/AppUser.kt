@@ -33,7 +33,7 @@ open class AppUser(
     open var createdAt: Instant = Instant.now(),
     open var updatedAt: Instant = Instant.now()
 ) {
-    protected constructor(): this(
+    constructor(): this(
         id           = null,
         email        = "",
         displayName  = null,
@@ -41,3 +41,4 @@ open class AppUser(
         providerId   = ""
     )
 }
+

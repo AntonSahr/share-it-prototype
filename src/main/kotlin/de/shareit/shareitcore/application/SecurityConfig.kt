@@ -21,7 +21,8 @@ open class SecurityConfig(
                 auth.requestMatchers(
                     "/",
                     "/items",
-                    "/css/**", "/js/**",
+                    "/css/**",
+                    "/js/**",
                     "/error",
                     "/oauth2/**",
                     "/login/**"                ).permitAll()
