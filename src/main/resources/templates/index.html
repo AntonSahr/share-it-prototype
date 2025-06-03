@@ -2,61 +2,74 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-    <title>Startseite – Alle Listings</title>
+    <title>Startseite – ShareIt</title>
     <link rel="stylesheet" th:href="@{/css/main.css}" />
 </head>
 <body>
-<header>
-    <h1>ShareIt – Alle Listings</h1>
-    <!-- Keine Suchleiste auf der Landing‐Page -->
+
+<!-- === Header / Topbar === -->
+<header class="header-container">
+    <div class="header-inner">
+        <h1 class="site-title"><a th:href="@{/}">ShareIt</a></h1>
+        <nav class="main-nav">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/items}">Alle Items</a>
+            <a th:href="@{/items/new}">Item erstellen</a>
+            <a th:href="@{/profile}">Mein Profil</a>
+            <a th:href="@{/logout}">Abmelden</a>
+        </nav>
+    </div>
 </header>
 
-<main>
-    <section>
-        <h2>Verfügbare Items</h2>
+<!-- === Hauptinhalt === -->
+<main class="content-container">
+    <section class="section-intro">
+        <h2 class="section-title">Verfügbare Listings</h2>
+        <p class="section-subtitle">Hier findest du alle aktuell eingestellten Items.</p>
+    </section>
 
-        <div th:if="${#lists.isEmpty(itemList)}">
+    <section class="section-listings">
+        <!-- Wenn keine Items existieren -->
+        <div th:if="${#lists.isEmpty(itemList)}" class="empty-state">
             <p>Zurzeit sind keine Items verfügbar.</p>
         </div>
 
-        <div th:if="${!#lists.isEmpty(itemList)}">
-            <ul>
-                <li th:each="item : ${itemList}">
-                    <article class="item-card">
-                        <!-- Beispiel: Thumbnail, Titel, Preis -->
-                        <div class="thumbnail">
-                            <img th:if="${item.thumbnailUrl != null}"
-                                 th:src="@{${item.thumbnailUrl}}"
-                                 alt="Thumbnail für [[${item.title}]]" />
-                            <div th:if="${item.thumbnailUrl == null}" class="no-image">kein Bild</div>
-                        </div>
+        <!-- Wenn Items vorhanden sind: als Karten-Grid anzeigen -->
+        <div th:if="${!#lists.isEmpty(itemList)}" class="card-grid">
+            <article th:each="item : ${itemList}" class="card">
 
-                        <div class="info">
-                            <h3 th:text="${item.title}">Titel</h3>
+                <div class="card-body">
+                    <h3 class="card-title" th:text="${item.title}">Item-Titel</h3>
 
-                            <p>
-                                <span th:text="${item.priceAmount}">0.00</span>
-                                <span th:text="${item.priceUnit.toLowerCase()}">€/tag</span>
-                            </p>
+                    <p class="card-price">
+                        <span th:text="${item.priceAmount}">0.00</span>
+                        <span th:text="${item.priceUnit.name().toLowerCase()}">€/tag</span>
+                    </p>
 
-                            <p th:if="${item.address != null}">
-                                <strong>Adresse:</strong>
-                                <span th:text="${item.address}">Musterstraße 1</span>
-                            </p>
+                    <p class="card-address" th:if="${item.address != null}">
+                        <svg class="icon-location" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38
+                                         0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"
+                                  fill="currentColor" />
+                        </svg>
+                        <span th:text="${item.address}">Musterstraße 1</span>
+                    </p>
 
-                            <a th:href="@{'/items/' + ${item.id}}" class="details-link">
-                                Details ansehen
-                            </a>
-                        </div>
-                    </article>
-                </li>
-            </ul>
+                    <a th:href="@{'/items/' + ${item.id}}" class="button button-secondary">
+                        Details ansehen
+                    </a>
+                </div>
+            </article>
         </div>
     </section>
 </main>
 
-<footer>
-    <p>&copy; 2025 ShareIt</p>
+<!-- === Footer === -->
+<footer class="footer-container">
+    <div class="footer-inner">
+        <p>&copy; 2025 ShareIt – Alle Rechte vorbehalten.</p>
+    </div>
 </footer>
+
 </body>
 </html>
