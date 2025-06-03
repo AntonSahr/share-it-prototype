@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.application.service
+package de.shareit.shareitcore.application.service.UserService
 
 import de.shareit.shareitcore.application.UserService
 import de.shareit.shareitcore.domain.model.AppUser
@@ -14,6 +14,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
@@ -43,9 +44,9 @@ internal class UserServiceOAuth2Test {
     )
 
     // Mocks und Spies, die in jedem Test gebraucht werden
-    private lateinit var clientRegistration: org.springframework.security.oauth2.client.registration.ClientRegistration
-    private lateinit var providerDetails: org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails
-    private lateinit var userInfoEndpoint: org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails.UserInfoEndpoint
+    private lateinit var clientRegistration: ClientRegistration
+    private lateinit var providerDetails: ClientRegistration.ProviderDetails
+    private lateinit var userInfoEndpoint: ClientRegistration.ProviderDetails.UserInfoEndpoint
     private lateinit var oauthRequest: OAuth2UserRequest
     private lateinit var spyDelegate: DefaultOAuth2UserService
     private lateinit var serviceWithSpy: UserService
@@ -54,14 +55,14 @@ internal class UserServiceOAuth2Test {
     @BeforeEach
     fun setUp() {
         // 1) ClientRegistration stubben: registrationId und providerDetails.userInfoEndpoint.userNameAttributeName
-        clientRegistration = mock(org.springframework.security.oauth2.client.registration.ClientRegistration::class.java).apply {
+        clientRegistration = mock(ClientRegistration::class.java).apply {
             `when`(registrationId).thenReturn("github")
         }
 
         providerDetails =
-            mock(org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails::class.java)
+            mock(ClientRegistration.ProviderDetails::class.java)
         userInfoEndpoint =
-            mock(org.springframework.security.oauth2.client.registration.ClientRegistration.ProviderDetails.UserInfoEndpoint::class.java)
+            mock(ClientRegistration.ProviderDetails.UserInfoEndpoint::class.java)
 
         // Stubbe genau die Methoden, die UserService.loadUser(...) tatsächlich aufruft:
         `when`(userInfoEndpoint.userNameAttributeName).thenReturn(providerIdAttr)

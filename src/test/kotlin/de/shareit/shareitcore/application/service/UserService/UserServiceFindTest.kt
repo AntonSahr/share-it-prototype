@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.application.service
+package de.shareit.shareitcore.application.service.UserService
 
 import de.shareit.shareitcore.application.UserService
 import de.shareit.shareitcore.domain.model.AppUser
