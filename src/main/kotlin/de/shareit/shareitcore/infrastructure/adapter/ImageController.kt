@@ -1,5 +1,6 @@
 package de.shareit.shareitcore.infrastructure.adapter
 import de.shareit.shareitcore.application.ImageService
+import de.shareit.shareitcore.ui.dto.ImageDto
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -98,14 +99,3 @@ class ImageController(
     }
 }
 
-/**
- * DTO für Antworten (ohne das tatsächliche Byte-Array)
- */
-data class ImageDto(
-    val id: Long,
-    val filename: String,
-    val contentType: String,
-    val size: Long,
-    val isThumbnail: Boolean,
-    val uploadedAt: Instant
-)

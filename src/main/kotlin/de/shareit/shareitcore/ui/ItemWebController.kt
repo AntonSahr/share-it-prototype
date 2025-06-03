@@ -1,5 +1,6 @@
 package de.shareit.shareitcore.ui
 
+import de.shareit.shareitcore.application.ImageService
 import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.model.PriceUnit
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.lang.IllegalArgumentException
 
 
@@ -20,7 +22,8 @@ import java.lang.IllegalArgumentException
 @RequestMapping("/items")
 class ItemWebController(
     private val listingService: ListingService,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val imageService: ImageService,
 ) {
 
     /**
@@ -67,6 +70,7 @@ class ItemWebController(
         authToken: OAuth2AuthenticationToken?,
         @Valid @ModelAttribute itemDto: ItemDto,
         bindingResult: BindingResult,
+        @RequestParam("images", required = false) images: List<MultipartFile>?,  // NEU
         model: Model
     ): String {
         if (authToken == null) {
@@ -85,7 +89,16 @@ class ItemWebController(
             .findByOauthProviderAndProviderId(registrationId, providerId)
             ?: throw IllegalArgumentException("Angemeldeter Nutzer nicht gefunden")
 
-        listingService.createItem(owner.id!!, itemDto)
+        // 1. Item erstellen (gibt zurück, z. B. die neue Item-ID oder DTO)
+        val createdItem: ItemResponseDto = listingService.createItem(owner.id!!, itemDto)
+
+        // 2. Falls Bilder ausgewählt wurden, speichere sie
+        images
+            ?.filter { file -> !file.isEmpty }
+            ?.let { fileList ->
+                imageService.uploadImages(createdItem.id, fileList)
+            }
+
         return "redirect:/items"
     }
 
@@ -120,12 +133,18 @@ class ItemWebController(
             description = existingDto.description,
             priceAmount = existingDto.priceAmount,
             priceUnit = existingDto.priceUnit,
-            address = existingDto.address
+            address = existingDto.address,
+            latitude = existingDto.latitude,
+            longitude = existingDto.longitude
         )
 
         model.addAttribute("itemDto", itemDto)
         model.addAttribute("itemId", id)
         model.addAttribute("editMode", true)
+
+        // NEU: Bestehende Bilder (inkl. Thumbnail-Info) ins Model packen
+        model.addAttribute("item", existingDto)
+
         return "item-form"
     }
 
@@ -138,6 +157,8 @@ class ItemWebController(
         authToken: OAuth2AuthenticationToken?,
         @Valid @ModelAttribute itemDto: ItemDto,
         bindingResult: BindingResult,
+        @RequestParam("images", required = false) images: List<MultipartFile>?,   // NEU
+        @RequestParam("thumbnailId", required = false) thumbnailId: Long?,           // NEU
         model: Model
     ): String {
         if (authToken == null) {
@@ -157,9 +178,24 @@ class ItemWebController(
             .findByOauthProviderAndProviderId(registrationId, providerId)
             ?: throw IllegalArgumentException("Angemeldeter Nutzer nicht gefunden")
 
+        // 1. Item‐Daten aktualisieren
         listingService.updateItem(owner.id!!, id, itemDto)
+
+        // 2. Falls neue Bilder ausgewählt wurden, speichere sie
+        images
+            ?.filter { file -> !file.isEmpty }
+            ?.let { fileList ->
+                imageService.uploadImages(id, fileList)
+            }
+
+        // 3. Falls der Nutzer ein Thumbnail ausgewählt hat, dieses Bild markieren
+        thumbnailId?.let { thumbId ->
+            imageService.markAsThumbnail(id, thumbId)
+        }
+
         return "redirect:/items/$id"
     }
+
 
     /**
      * Item löschen (nur Owner)

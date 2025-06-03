@@ -18,7 +18,7 @@
         <h1 class="site-title"><a th:href="@{/}">ShareIt</a></h1>
         <nav class="main-nav">
             <a th:href="@{/}">Startseite</a>
-            <a th:href="@{/items}">Angebote</a>
+            <a th:href="@{/items}" th:classappend="${itemId == null} ? '' : ''">Angebote</a>
             <a th:href="@{/items/new}" th:classappend="${itemId == null} ? ' active' : ''">Neues Item</a>
             <a th:href="@{/profile}">Profil</a>
             <a th:href="@{/logout}">Abmelden</a>
@@ -35,9 +35,11 @@
             <!-- Fehlermeldung, z. B. wenn nicht eingeloggt -->
             <div th:if="${errorMessage}" class="error" th:text="${errorMessage}"></div>
 
+            <!-- Wichtig: enctype="multipart/form-data" hinzufügen -->
             <form th:action="@{${itemId != null} ? '/items/' + ${itemId} + '/edit' : '/items/new'}"
                   th:object="${itemDto}"
-                  th:method="post">
+                  method="post"
+                  enctype="multipart/form-data">
                 <!-- CSRF-Token wird automatisch eingefügt -->
                 <input type="hidden" th:if="${itemId != null}" th:name="itemId" th:value="${itemId}" />
 
@@ -104,6 +106,40 @@
                 <!-- Versteckte Felder für Koordinaten -->
                 <input type="hidden" id="latitude" th:field="*{latitude}" />
                 <input type="hidden" id="longitude" th:field="*{longitude}" />
+
+                <!-- === NEU: Bilder-Upload === -->
+                <div class="form-group">
+                    <label for="images">Bilder hochladen:</label>
+                    <input type="file"
+                           id="images"
+                           name="images"
+                           multiple
+                           accept="image/*" />
+                    <p class="form-help">Du kannst mehrere Bilder auswählen (JPEG, PNG, max. 5 MB pro Bild).</p>
+                </div>
+
+                <!-- === OPTIONAL: Bestehende Bilder anzeigen (nur Edit-Modus) === -->
+                <div th:if="${editMode}">
+                    <h3>Bereits hochgeladene Bilder</h3>
+                    <div th:if="${item.images != null}">
+                        <ul>
+                            <li th:each="img : ${item.images}">
+                                <img th:src="@{'/items/' + ${item.id} + '/images/' + ${img.id} + '/data'}"
+                                     alt="Vorschaubild"
+                                     style="width:100px; height:100px; object-fit:cover; margin-right: 0.5rem;" />
+                                <span th:text="${img.filename}">Bildname.jpg</span>
+                                <!-- Thumbnail markieren: wenn img.isThumbnail == true, Checkbox vorausgewählt -->
+                                <label>
+                                    <input type="radio"
+                                           name="thumbnailId"
+                                           th:value="${img.id}"
+                                           th:checked="${img.isThumbnail}" />
+                                    Als Thumbnail
+                                </label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
 
                 <div class="actions" style="margin-top: 1.5rem;">
                     <button type="submit" th:text="${itemId != null} ? 'Aktualisieren' : 'Erstellen'">Speichern</button>
