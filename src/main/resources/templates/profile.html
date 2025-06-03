@@ -1,97 +1,107 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <title>Profil – ShareIt</title>
-    <link rel="stylesheet" href="/css/styles.css" /> <!-- Optionales CSS -->
+    <meta charset="UTF-8">
+    <title>Profil bearbeiten</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
 </head>
 <body>
-<header>
-    <div class="header-container">
-        <h1><a th:href="@{/}">ShareIt</a></h1>
-        <nav>
-            <ul class="nav-menu">
-                <li><a th:href="@{/}">Startseite</a></li>
-                <li><a th:href="@{/items}">Anzeigen</a></li>
-                <li><a th:href="@{/items/new}">Item hochladen</a></li>
-                <li><a th:href="@{/profile}" class="active">Profil</a></li>
-                <li><a th:href="@{/logout}">Abmelden</a></li>
-            </ul>
+
+<!-- === Header / Topbar === -->
+<header class="header-container">
+    <div class="header-inner">
+        <h1 class="site-title"><a th:href="@{/}">ShareIt</a></h1>
+        <nav class="main-nav">
+            <a th:href="@{/}">Startseite</a>
+            <a th:href="@{/items}">Alle Items</a>
+            <a th:href="@{/items/new}">Neues Item</a>
+            <a th:href="@{/profile}">Profil</a>
+            <a th:href="@{/logout}">Logout</a>
         </nav>
     </div>
 </header>
 
-<main>
-    <section class="profile-section">
-        <h2>Dein Profil</h2>
+<!-- === Hauptinhalt === -->
+<main class="content-container">
+    <div class="content-box">
+        <div class="card">
+            <div class="card-header">
+                <h2>Profil bearbeiten</h2>
+            </div>
+            <div class="card-body">
+                <!-- Fehlermeldung / Erfolgshinweis -->
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+                <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
 
-        <!-- Profilinformationen, die der Controller ins Model legen muss -->
-        <div class="profile-details">
-            <div>
-                <label>Provider-ID:</label>
-                <span th:text="${providerId} ?: 'Nicht angemeldet'">[Provider-ID]</span>
-            </div>
-            <div>
-                <label>Anzeige-Name:</label>
-                <span th:text="${userDto.displayName} ?: 'Nicht verfügbar'">[Anzeige-Name]</span>
-            </div>
-            <div>
-                <label>Aktuelle E-Mail:</label>
-                <span th:text="${userDto.email} ?: 'Keine E-Mail hinterlegt'">[E-Mail]</span>
+                <!-- Aktuelle Profilinformationen -->
+                <section style="margin-bottom: 2rem;">
+                    <h3>Aktuelle Profilinformationen</h3>
+                    <p>
+                        <strong>Anzeigename:</strong>
+                        <span th:text="${userDto.displayName}">Max Mustermann</span>
+                    </p>
+                    <p>
+                        <strong>E-Mail-Adresse:</strong>
+                        <span th:text="${userDto.email}">max@example.com</span>
+                    </p>
+                </section>
+
+                <!-- Formular für Anzeigenamen -->
+                <section style="margin-bottom: 2rem;">
+                    <h3>Anzeigename ändern</h3>
+                    <form th:action="@{/profile/update/displayname}" th:object="${userDto}" method="post">
+                        <div class="form-group">
+                            <label for="displayName">Neuer Anzeigename</label>
+                            <input
+                                    id="displayName"
+                                    name="displayName"
+                                    type="text"
+                                    class="form-input"
+                                    placeholder="Neuer Anzeigename"
+                                    th:field="*{displayName}"
+                                    required
+                            />
+                            <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="error"></div>
+                        </div>
+                        <div class="form-actions" style="margin-top: 1rem;">
+                            <button type="submit">Speichern</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Formular für E-Mail -->
+                <section>
+                    <h3>E-Mail-Adresse ändern</h3>
+                    <form th:action="@{/profile/update/email}" th:object="${userDto}" method="post">
+                        <div class="form-group">
+                            <label for="email">Neue E-Mail-Adresse</label>
+                            <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    class="form-input"
+                                    placeholder="Neue E-Mail-Adresse"
+                                    th:field="*{email}"
+                                    required
+                            />
+                            <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></div>
+                        </div>
+                        <div class="form-actions" style="margin-top: 1rem;">
+                            <button type="submit">Speichern</button>
+                        </div>
+                    </form>
+                </section>
             </div>
         </div>
-
-        <h3>E-Mail bearbeiten / hinzufügen</h3>
-
-        <!-- Erfolg/Fehlernachricht, die der Controller ins Model legen kann -->
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
-
-        <!-- Formular zum Bearbeiten der E-Mail -->
-        <form th:action="@{/profile/update/email}"
-              th:object="${userDto}"
-              method="post"
-              class="profile-form">
-            <div>
-                <label for="email">Neue E-Mail-Adresse:</label>
-                <input type="email"
-                       id="email"
-                       th:field="*{email}"
-                       placeholder="Neue E-Mail eingeben"
-                       required />
-            </div>
-            <div>
-                <button type="submit">Speichern</button>
-            </div>
-        </form>
-
-        <h3>Anzeigename Hinzufügen / bearbeiten</h3>
-
-        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-        <div th:if="${errorMessage}"   class="alert alert-danger"  th:text="${errorMessage}"></div>
-
-        <!-- Formular zum Bearbeiten der E-Mail -->
-        <form th:action="@{/profile/update/displayname}"
-              th:object="${userDto}"
-              method="post"
-              class="profile-form">
-            <div>
-                <label for="displayname">Neuer Anzeigename:</label>
-                <input type="text"
-                       id="displayname"
-                       th:field="*{displayName}"
-                       placeholder="Neuer Anzeigename eingeben"
-                       required />
-            </div>
-            <div>
-                <button type="submit">Speichern</button>
-            </div>
-        </form>
-    </section>
+    </div>
 </main>
 
-<footer>
-    <p>&copy; 2025 ShareIt</p>
+<!-- === Footer === -->
+<footer class="footer-container">
+    <div class="footer-inner">
+        <p>&copy; 2025 ShareIt – Alle Rechte vorbehalten.</p>
+    </div>
 </footer>
+
 </body>
 </html>

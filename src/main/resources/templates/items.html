@@ -3,66 +3,73 @@
 <head>
     <meta charset="UTF-8" />
     <title>Alle Items – ShareIt</title>
-    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
 </head>
 <body>
-<header>
-    <div class="header-container">
-        <h1><a th:href="@{/}">ShareIt</a></h1>
-        <nav>
-            <ul>
-                <li><a th:href="@{/}">Startseite</a></li>
-                <li><a th:href="@{/items}" class="active">Angebote</a></li>
-                <li><a th:href="@{/items/new}">Neues Item</a></li>
-                <li><a th:href="@{/profile}">Profil</a></li>
-                <li><a th:href="@{/logout}">Abmelden</a></li>
-            </ul>
+
+<!-- === Header / Topbar === -->
+<header class="header-container">
+    <div class="header-inner">
+        <h1 class="site-title"><a th:href="@{/}">ShareIt</a></h1>
+        <nav class="main-nav">
+            <a th:href="@{/}">Startseite</a>
+            <a th:href="@{/items}" class="active">Angebote</a>
+            <a th:href="@{/items/new}">Neues Item</a>
+            <a th:href="@{/profile}">Profil</a>
+            <a th:href="@{/logout}">Abmelden</a>
         </nav>
     </div>
 </header>
 
-<main>
-    <section>
-        <h2>Alle angebotenen Items</h2>
-        <div th:if="${items.isEmpty()}">
-            <p>Keine Items gefunden. <a th:href="@{/items/new}">Erstelle das erste Item</a>.</p>
-        </div>
-        <table th:if="${!items.isEmpty()}">
-            <thead>
-            <tr>
-                <th>Titel</th>
-                <th>Beschreibung</th>
-                <th>Preis</th>
-                <th>Besitzer</th>
-                <th>Aktionen</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${items}">
-                <td>
-                    <a th:href="@{|/items/${item.id}|}" th:text="${item.title}">Beispiel-Titel</a>
-                </td>
-                <td th:text="${item.description} ?: '-'">Keine Beschreibung</td>
-                <td>
-                    <span th:text="${item.priceAmount}">0.00</span>
-                    <span th:text="${item.priceUnit.name().toLowerCase()}">daily</span>
-                </td>
-                <td th:text="${item.ownerDisplayName} ?: 'Unbekannt'">Besitzer</td>
-                <td>
-                    <a th:href="@{|/items/${item.id}/edit|}">Bearbeiten</a>
-                    &nbsp;|&nbsp;
-                    <form th:action="@{|/items/${item.id}/delete|}" method="post" style="display:inline">
-                        <button type="submit" onclick="return confirm('Wirklich löschen?')">Löschen</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </section>
+<!-- === Hauptinhalt === -->
+<main class="content-container">
+    <div class="content-box">
+        <section>
+            <h2>Alle angebotenen Items</h2>
+            <div th:if="${items.isEmpty()}">
+                <p>Keine Items gefunden. <a th:href="@{/items/new}">Erstelle das erste Item</a>.</p>
+            </div>
+            <table th:if="${!items.isEmpty()}">
+                <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Beschreibung</th>
+                    <th>Preis</th>
+                    <th>Besitzer</th>
+                    <th>Aktionen</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="item : ${items}">
+                    <td>
+                        <a th:href="@{|/items/${item.id}|}" th:text="${item.title}">Beispiel-Titel</a>
+                    </td>
+                    <td th:text="${item.description} ?: '-'">Keine Beschreibung</td>
+                    <td>
+                        <span th:text="${item.priceAmount}">0.00</span>
+                        <span th:text="${item.priceUnit.name().toLowerCase()}">daily</span>
+                    </td>
+                    <td th:text="${item.ownerDisplayName} ?: 'Unbekannt'">Besitzer</td>
+                    <td>
+                        <a th:href="@{|/items/${item.id}/edit|}">Bearbeiten</a>
+                        &nbsp;|&nbsp;
+                        <form th:action="@{|/items/${item.id}/delete|}" method="post" style="display:inline">
+                            <button type="submit" onclick="return confirm('Wirklich löschen?')">Löschen</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
 </main>
 
-<footer>
-    <p>&copy; 2025 ShareIt</p>
+<!-- === Footer === -->
+<footer class="footer-container">
+    <div class="footer-inner">
+        <p>&copy; 2025 ShareIt</p>
+    </div>
 </footer>
+
 </body>
 </html>
