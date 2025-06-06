@@ -1,5 +1,6 @@
 package de.shareit.shareitcore.ui
 
+import de.shareit.shareitcore.application.CategoryService
 import de.shareit.shareitcore.application.ImageService
 import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
@@ -26,6 +27,7 @@ class ItemWebController(
     private val listingService: ListingService,
     private val userRepo: UserRepository,
     private val imageService: ImageService,
+    private val categoryService: CategoryService,
 ) {
 
     /**
@@ -64,6 +66,7 @@ class ItemWebController(
                 address = "")
         )
         model.addAttribute("editMode", false)
+        model.addAttribute("allCategories", categoryService.getAllCategories())
         return "item-form"
     }
 
@@ -95,7 +98,7 @@ class ItemWebController(
             ?: throw IllegalArgumentException("Angemeldeter Nutzer nicht gefunden")
 
         // 1. Item erstellen (gibt zurück, z. B. die neue Item-ID oder DTO)
-        val createdItem: ItemResponseDto = listingService.createItem(owner.id!!, itemDto)
+        val createdItem: ItemResponseDto = listingService.createItem(owner.id!!, itemDto, itemDto.categoryId)
 
         // 2. Falls Bilder ausgewählt wurden, speichere sie
         images

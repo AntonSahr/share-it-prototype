@@ -13,14 +13,15 @@ import java.time.Instant
 class ListingService(
     private val itemRepository: ItemRepository,
     private val userRepository: UserRepository,
-    private val geocodingService: GeocodingService
+    private val geocodingService: GeocodingService,
+    private val categoryService: CategoryService
 ) {
     /**
      * Neues Item für ownerId anlegen.
      * @throws IllegalArgumentException, wenn User nicht existiert.
      */
     @Transactional
-    fun createItem(ownderId: Long, dto: ItemDto): ItemResponseDto{
+    fun createItem(ownderId: Long, dto: ItemDto, categoryId: Long?): ItemResponseDto{
         val owner = userRepository.findById(ownderId)
             .orElseThrow { RuntimeException("Owner mit ID $ownderId nicht gefunden") }
 
@@ -39,6 +40,11 @@ class ListingService(
             latitude = lat,
             address = dto.address,
         )
+
+        if (categoryId != null) {
+            val categoryEntity = categoryService.getCategoryById(categoryId)
+            item.category = categoryEntity
+        }
 
         val saved = itemRepository.save(item)
         return mapToResponseDto(saved)

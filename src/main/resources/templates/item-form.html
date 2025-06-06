@@ -81,6 +81,19 @@
                     <div th:if="${#fields.hasErrors('priceUnit')}" th:errors="*{priceUnit}" class="error"></div>
                 </div>
 
+                <div class="form-group">
+                    <label for="category">Kategorie:</label>
+                    <select id="category" name="categoryId" class="form-control">
+                        <option value="">-- Keine Kategorie --</option>
+                        <!-- Für jede übergebene Kategorie aus dem Model ein <option> bauen -->
+                        <option th:each="c : ${allCategories}"
+                                th:value="${c.id}"
+                                th:text="${c.name}"
+                                th:selected="${c.id} == ${itemDto.categoryId}">
+                        </option>
+                    </select>
+                </div>
+
                 <!-- Adresseingabe -->
                 <div class="form-group">
                     <label for="address">Adresse:</label>

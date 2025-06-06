@@ -23,30 +23,35 @@ open class SecurityConfig(
 ) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http.csrf { csrf ->
-            csrf
-                .ignoringRequestMatchers("/h2-console/**")
-
-        }
+        http
+            // CSRF bleibt aktiv (nur H2-Console ausgenommen)
+            .csrf { csrf ->
+                csrf.ignoringRequestMatchers("/h2-console/**")
+            }
             .headers { headers ->
                 headers.frameOptions { frame ->
                     frame.sameOrigin()
                 }
             }
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers(
-                    "/",
-                    "/items",
-                    "/css/**",
-                    "/js/**",
-                    "/error",
-                    "/oauth2/**",
-                    "/login/**",
-                    "/h2-console/**",
-                    "/categories/**"
-                ).permitAll()
-//                    .requestMatchers(HttpMethod.POST, "/categories").hasRole("ADMIN")
-//                    .requestMatchers(HttpMethod.GET, "/categories", "/categories/new").hasRole("ADMIN")
+                auth
+                    // ► LISTEN: "/items" (z. B. Item-Übersicht) darf öffentlich bleiben
+                    .requestMatchers("/items").permitAll()
+
+                    // ► FORMULARE: "/items/new" und "/items/{id}/edit" nur für eingeloggte Nutzer
+                    .requestMatchers(HttpMethod.GET, "/items/new", "/items/*/edit").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/items/new", "/items/*/edit").authenticated()
+
+                    // ► SONSTIGES: z. B. Kategorien-Endpoints offenlassen
+                    .requestMatchers("/categories/**").permitAll()
+
+                    // ► STATISCHE RESSOURCEN
+                    .requestMatchers(
+                        "/", "/css/**", "/js/**", "/error",
+                        "/oauth2/**", "/login/**", "/h2-console/**"
+                    ).permitAll()
+
+                    // Alles andere (z. B. /items/{id}, /items/{id}/delete) erfordert Auth
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
@@ -56,7 +61,9 @@ open class SecurityConfig(
                     }
                     .defaultSuccessUrl("/items", true)
             }
-            .logout { it.logoutSuccessUrl("/") }
+            .logout {
+                it.logoutSuccessUrl("/")
+            }
         return http.build()
     }
 }

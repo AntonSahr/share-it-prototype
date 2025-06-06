@@ -23,5 +23,7 @@ data class ItemDto(
     var address: String?,
 
     var latitude: BigDecimal? = null,
-    var longitude: BigDecimal? = null
+    var longitude: BigDecimal? = null,
+
+    var categoryId: Long? = null,
 )

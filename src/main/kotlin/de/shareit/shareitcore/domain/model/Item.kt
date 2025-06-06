@@ -44,7 +44,11 @@ open class Item(
     open var address: String?,
 
     @OneToMany(mappedBy = "item", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val images: MutableList<ImageEntity> = mutableListOf()
+    val images: MutableList<ImageEntity> = mutableListOf(),
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")    // ← Neue Spalte für die Kategorie
+    open var category: Category? = null, // ← Category-Relation
 ) {
     protected constructor() : this(
         id = null,
@@ -57,7 +61,8 @@ open class Item(
         updatedAt = Instant.now(),
         latitude = null,
         longitude = null,
-        address = null
+        address = null,
+        category = null,
     )
 }
 
