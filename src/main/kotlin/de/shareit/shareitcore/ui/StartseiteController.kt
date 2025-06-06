@@ -34,6 +34,7 @@ class StartseiteController(
                 ownerDisplayName = item.ownerDisplayName,
                 updatedAt = item.updatedAt,
                 createdAt  = item.createdAt,
+                categoryId = item.categoryId
             )
         }
 

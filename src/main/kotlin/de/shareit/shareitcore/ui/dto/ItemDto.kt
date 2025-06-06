@@ -20,7 +20,7 @@ data class ItemDto(
     var priceUnit: PriceUnit,
 
     @field:NotNull(message = "Adresse darf nicht leer sein")
-    var address: String?,
+    var address: String ="",
 
     var latitude: BigDecimal? = null,
     var longitude: BigDecimal? = null,

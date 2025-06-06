@@ -41,7 +41,7 @@ open class Item(
     var longitude: BigDecimal? = null,
 
     @Column(name = "address", length = 255, nullable = false)
-    open var address: String?,
+    open var address: String,
 
     @OneToMany(mappedBy = "item", cascade = [CascadeType.ALL], orphanRemoval = true)
     val images: MutableList<ImageEntity> = mutableListOf(),
@@ -61,7 +61,7 @@ open class Item(
         updatedAt = Instant.now(),
         latitude = null,
         longitude = null,
-        address = null,
+        address = "",
         category = null,
     )
 }
