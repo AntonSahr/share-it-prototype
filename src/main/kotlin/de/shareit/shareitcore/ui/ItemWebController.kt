@@ -8,6 +8,7 @@ import de.shareit.shareitcore.domain.service.UserRepository
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.web.dto.ItemDto
 import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Controller
@@ -16,6 +17,7 @@ import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
 import java.lang.IllegalArgumentException
+import org.springframework.http.HttpHeaders
 
 
 @Controller
@@ -41,6 +43,9 @@ class ItemWebController(
     fun showDetail(@PathVariable id: Long, model: Model): String {
         val itemDto = listingService.findById(id)
         model.addAttribute("item", itemDto)
+
+        val images = imageService.listImagesForItem(id)
+        model.addAttribute("images", images)
         return "item-detail"    // Name des Thymeleaf‐Templates (item-detail.html)
     }
 
@@ -218,5 +223,21 @@ class ItemWebController(
 
         listingService.deleteItem(owner.id!!, id)
         return "redirect:/items"
+    }
+
+    @GetMapping("/{itemId}/images/{imageId}/data")
+    fun getImageData(
+        @PathVariable itemId: Long,
+        @PathVariable imageId: Long
+    ): ResponseEntity<ByteArray> {
+        // Hole alle Bilder für das Item und suche das richtige heraus
+        val image = imageService.listImagesForItem(itemId)
+            .find { it.id == imageId }
+            ?: throw IllegalArgumentException("Bild mit ID $imageId für Item $itemId nicht gefunden.")
+
+        // Gebe das Bild-Byte-Array mit dem korrekten Content-Type zurück
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, image.contentType)
+            .body(image.data)
     }
 }

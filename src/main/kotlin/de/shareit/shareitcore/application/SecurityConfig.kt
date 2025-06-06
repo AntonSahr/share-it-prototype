@@ -16,7 +16,17 @@ open class SecurityConfig(
 ) {
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http
+        http.csrf { csrf ->
+            csrf
+                // Alle anderen Pfade CSRF-geschützt lassen, aber
+                // für /h2-console/** CSRF ignorieren
+                .ignoringRequestMatchers("/h2-console/**")
+        }
+            .headers { headers ->
+                headers.frameOptions { frame ->
+                    frame.sameOrigin()
+                }
+            }
             .authorizeHttpRequests { auth ->
                 auth.requestMatchers(
                     "/",
@@ -25,7 +35,9 @@ open class SecurityConfig(
                     "/js/**",
                     "/error",
                     "/oauth2/**",
-                    "/login/**"                ).permitAll()
+                    "/login/**",
+                    "/h2-console/**"
+                ).permitAll()
                     .anyRequest().authenticated()
             }
             .oauth2Login { oauth2 ->
