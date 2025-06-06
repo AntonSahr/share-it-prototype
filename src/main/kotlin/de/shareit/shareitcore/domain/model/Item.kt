@@ -42,6 +42,9 @@ open class Item(
 
     @Column(name = "address", length = 255, nullable = false)
     open var address: String?,
+
+    @OneToMany(mappedBy = "item", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val images: MutableList<ImageEntity> = mutableListOf()
 ) {
     protected constructor() : this(
         id = null,

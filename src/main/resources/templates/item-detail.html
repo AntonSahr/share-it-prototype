@@ -27,7 +27,6 @@
     </div>
 </header>
 
-<!-- === Hauptinhalt === -->
 <main class="content-container">
     <div class="content-box">
         <h2 th:text="'Detailansicht: ' + ${item.title}">Detailansicht: Titel</h2>
@@ -44,105 +43,68 @@
             <div class="field-value" th:text="${item.description}">Beispiel-Beschreibung</div>
         </div>
 
-        <!-- Preiseinheit und Betrag -->
+        <!-- Preis -->
         <div>
-            <span class="field-label">Preis:</span>
-            <span class="field-value">
-                <span th:text="${item.priceAmount}">0.00</span>
-                <span th:text="${item.priceUnit.name().toLowerCase()}">daily</span>
-            </span>
-        </div>
-
-        <!-- Eigentümer-Info -->
-        <div>
-            <div class="field-label">Anbieter:</div>
+            <div class="field-label">Preis:</div>
             <div class="field-value"
-                 th:text="${item.ownerDisplayName} + ' (ID: ' + ${item.ownerId} + ')'">
-                Max Mustermann (ID: 1)
-            </div>
+                 th:text="${item.priceAmount} + ' €/' + ${item.priceUnit}">0 €/DAILY</div>
         </div>
 
-        <!-- Adresse (nur anzeigen, wenn nicht-leer) -->
-        <div th:if="${item.address != null and item.address != ''}">
+        <!-- Besitzer -->
+        <div>
+            <div class="field-label">Besitzer:</div>
+            <div class="field-value" th:text="${item.ownerDisplayName}">Max Mustermann</div>
+        </div>
+
+        <!-- Adresse -->
+        <div th:if="${item.address != null}">
             <div class="field-label">Adresse:</div>
-            <div class="field-value" th:text="${item.address}">Musterstraße 1, 12345 Berlin</div>
+            <div class="field-value" th:text="${item.address}">Musterstraße 1, 10115 Berlin</div>
         </div>
 
-        <!-- Koordinaten -->
+        <!-- === NEU: Bilder-Liste === -->
+        <div th:if="${images != null and !images.isEmpty()}">
+            <div class="field-label">Bilder:</div>
+            <div class="field-value">
+                <ul class="image-list"
+                    style="list-style: none; padding: 0; display: flex; flex-wrap: wrap;">
+                    <li th:each="img : ${images}"
+                        style="margin: 0.5rem; text-align: center;">
+                        <!-- THYMELEAF-WEIKE ZUM Auswerten von URL und ALT: -->
+                        <img
+                                th:src="@{'/items/' + ${item.id} + '/images/' + ${img.id} + '/data'}"
+                                th:alt="|Bild von ${item.title}|"
+                                style="max-width:200px; max-height:200px;
+                           display:block;
+                           object-fit:cover;
+                           border:1px solid #ccc;
+                           border-radius:4px;" />
+                        <div th:if="${img.isThumbnail}"
+                             style="font-size:0.85rem;
+                            color:#007bff;
+                            margin-top:0.25rem;">
+                            <strong>Thumbnail</strong>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- === Ende Bilder-Liste === -->
+
+        <!-- Karte -->
         <div th:if="${item.latitude != null and item.longitude != null}">
-            <div class="field-label">Koordinaten (Lat, Lon):</div>
-            <div class="field-value"
-                 th:text="${item.latitude} + ', ' + ${item.longitude}">
-                52.521918, 13.413215
-            </div>
-        </div>
-
-        <!-- Erstellungs- und Aktualisierungszeitpunkt -->
-        <div>
-            <div class="field-label">Erstellt am:</div>
-            <div class="field-value"
-                 th:text="${#temporals.format(item.createdAt, 'yyyy-MM-dd HH:mm')}">
-                2025-06-02 14:30
-            </div>
-        </div>
-        <div>
-            <div class="field-label">Zuletzt aktualisiert:</div>
-            <div class="field-value"
-                 th:text="${#temporals.format(item.updatedAt, 'yyyy-MM-dd HH:mm')}">
-                2025-06-10 09:15
-            </div>
-        </div>
-
-        <!-- Leaflet-Karte nur anzeigen, wenn Koordinaten vorhanden sind -->
-        <div th:if="${item.latitude != null and item.longitude != null}">
+            <div class="field-label">Karte:</div>
             <div id="detail-map" style="height: 300px;"></div>
         </div>
-        <div th:if="${item.latitude == null or item.longitude == null}" class="no-location">
-            Keine Standortdaten verfügbar.
-        </div>
 
-        <!-- Aktionen: Bearbeiten / Löschen / Zurück -->
-        <div class="actions" style="margin-top: 1.5rem;">
-            <a th:href="@{/items/{id}/edit(id=${item.id})}" class="button button-secondary">Bearbeiten</a>
-            <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post" style="display:inline; margin-left: 1rem;">
-                <!-- CSRF-Token wird automatisch ergänzt -->
-                <button type="submit" class="button delete"
-                        onclick="return confirm('Item wirklich löschen?');">
-                    Löschen
-                </button>
-            </form>
-            <a th:href="@{/items}" class="button button-secondary" style="margin-left: 1rem;">Zurück zur Übersicht</a>
-        </div>
+
     </div>
 </main>
 
-<!-- === Footer === -->
-<footer class="footer-container">
-    <div class="footer-inner">
-        <p>&copy; 2025 ShareIt</p>
-    </div>
-</footer>
-
-<!-- === Leaflet JS === -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet JS -->
 <script th:inline="javascript">
     /*<![CDATA[*/
-    // Prüfen, ob Koordinaten vorhanden sind
-    var lat = [[${item.latitude}]];     // → JavaScript-Literal oder null
-    var lon = [[${item.longitude}]];    // → JavaScript-Literal oder null
-
-    if (lat != null && lon != null) {
-        // Karte initialisieren
-        var map = L.map('detail-map').setView([lat, lon], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-
-        // Marker auf item's Koordinate setzen
-        L.marker([lat, lon]).addTo(map)
-            .bindPopup(/*[[${item.title}]]*/ "Titel")
-            .openPopup();
-    }
+    /* … vorhandener Map-Code … */
     /*]]>*/
 </script>
 

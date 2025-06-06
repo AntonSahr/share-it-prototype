@@ -1,5 +1,6 @@
 package de.shareit.shareitcore.ui
 
+import de.shareit.shareitcore.application.ImageService
 import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.model.PriceUnit
@@ -7,20 +8,24 @@ import de.shareit.shareitcore.domain.service.UserRepository
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.web.dto.ItemDto
 import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import java.lang.IllegalArgumentException
+import org.springframework.http.HttpHeaders
 
 
 @Controller
 @RequestMapping("/items")
 class ItemWebController(
     private val listingService: ListingService,
-    private val userRepo: UserRepository
+    private val userRepo: UserRepository,
+    private val imageService: ImageService,
 ) {
 
     /**
@@ -38,6 +43,9 @@ class ItemWebController(
     fun showDetail(@PathVariable id: Long, model: Model): String {
         val itemDto = listingService.findById(id)
         model.addAttribute("item", itemDto)
+
+        val images = imageService.listImagesForItem(id)
+        model.addAttribute("images", images)
         return "item-detail"    // Name des Thymeleaf‐Templates (item-detail.html)
     }
 
@@ -67,6 +75,7 @@ class ItemWebController(
         authToken: OAuth2AuthenticationToken?,
         @Valid @ModelAttribute itemDto: ItemDto,
         bindingResult: BindingResult,
+        @RequestParam("images", required = false) images: List<MultipartFile>?,  // NEU
         model: Model
     ): String {
         if (authToken == null) {
@@ -85,7 +94,16 @@ class ItemWebController(
             .findByOauthProviderAndProviderId(registrationId, providerId)
             ?: throw IllegalArgumentException("Angemeldeter Nutzer nicht gefunden")
 
-        listingService.createItem(owner.id!!, itemDto)
+        // 1. Item erstellen (gibt zurück, z. B. die neue Item-ID oder DTO)
+        val createdItem: ItemResponseDto = listingService.createItem(owner.id!!, itemDto)
+
+        // 2. Falls Bilder ausgewählt wurden, speichere sie
+        images
+            ?.filter { file -> !file.isEmpty }
+            ?.let { fileList ->
+                imageService.uploadImages(createdItem.id, fileList)
+            }
+
         return "redirect:/items"
     }
 
@@ -120,12 +138,18 @@ class ItemWebController(
             description = existingDto.description,
             priceAmount = existingDto.priceAmount,
             priceUnit = existingDto.priceUnit,
-            address = existingDto.address
+            address = existingDto.address,
+            latitude = existingDto.latitude,
+            longitude = existingDto.longitude
         )
 
         model.addAttribute("itemDto", itemDto)
         model.addAttribute("itemId", id)
         model.addAttribute("editMode", true)
+
+        // NEU: Bestehende Bilder (inkl. Thumbnail-Info) ins Model packen
+        model.addAttribute("item", existingDto)
+
         return "item-form"
     }
 
@@ -138,6 +162,8 @@ class ItemWebController(
         authToken: OAuth2AuthenticationToken?,
         @Valid @ModelAttribute itemDto: ItemDto,
         bindingResult: BindingResult,
+        @RequestParam("images", required = false) images: List<MultipartFile>?,   // NEU
+        @RequestParam("thumbnailId", required = false) thumbnailId: Long?,           // NEU
         model: Model
     ): String {
         if (authToken == null) {
@@ -157,9 +183,24 @@ class ItemWebController(
             .findByOauthProviderAndProviderId(registrationId, providerId)
             ?: throw IllegalArgumentException("Angemeldeter Nutzer nicht gefunden")
 
+        // 1. Item‐Daten aktualisieren
         listingService.updateItem(owner.id!!, id, itemDto)
+
+        // 2. Falls neue Bilder ausgewählt wurden, speichere sie
+        images
+            ?.filter { file -> !file.isEmpty }
+            ?.let { fileList ->
+                imageService.uploadImages(id, fileList)
+            }
+
+        // 3. Falls der Nutzer ein Thumbnail ausgewählt hat, dieses Bild markieren
+        thumbnailId?.let { thumbId ->
+            imageService.markAsThumbnail(id, thumbId)
+        }
+
         return "redirect:/items/$id"
     }
+
 
     /**
      * Item löschen (nur Owner)
@@ -182,5 +223,21 @@ class ItemWebController(
 
         listingService.deleteItem(owner.id!!, id)
         return "redirect:/items"
+    }
+
+    @GetMapping("/{itemId}/images/{imageId}/data")
+    fun getImageData(
+        @PathVariable itemId: Long,
+        @PathVariable imageId: Long
+    ): ResponseEntity<ByteArray> {
+        // Hole alle Bilder für das Item und suche das richtige heraus
+        val image = imageService.listImagesForItem(itemId)
+            .find { it.id == imageId }
+            ?: throw IllegalArgumentException("Bild mit ID $imageId für Item $itemId nicht gefunden.")
+
+        // Gebe das Bild-Byte-Array mit dem korrekten Content-Type zurück
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, image.contentType)
+            .body(image.data)
     }
 }
