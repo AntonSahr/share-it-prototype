@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Kategorienliste</title>
+</head>
+<body>
+<h1>Alle Kategorien</h1>
+
+<a th:href="@{/categories/new}">► Neue Kategorie anlegen</a>
+
+<ul>
+    <li th:each="c : ${categories}" th:text="${c.name} + ${c.parent != null ? ' (Parent: ' + c.parent.name + ')' : ''}"></li>
+</ul>
+
+</body>
+</html>
