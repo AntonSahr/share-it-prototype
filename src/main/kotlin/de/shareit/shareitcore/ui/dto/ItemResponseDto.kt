@@ -16,5 +16,7 @@ data class ItemResponseDto(
     val updatedAt: Instant,
     val latitude: BigDecimal?,
     val longitude: BigDecimal?,
-    val address: String?
+    val address: String,
+    val categoryId: Long?,
+    val images: List<ImageDto> = emptyList(),
 )

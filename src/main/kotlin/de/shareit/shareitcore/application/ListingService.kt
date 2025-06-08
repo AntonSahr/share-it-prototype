@@ -3,6 +3,7 @@ package de.shareit.shareitcore.application
 import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.service.ItemRepository
 import de.shareit.shareitcore.domain.service.UserRepository
+import de.shareit.shareitcore.ui.dto.ImageDto
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.web.dto.ItemDto
 import jakarta.transaction.Transactional
@@ -13,7 +14,8 @@ import java.time.Instant
 class ListingService(
     private val itemRepository: ItemRepository,
     private val userRepository: UserRepository,
-    private val geocodingService: GeocodingService
+    private val geocodingService: GeocodingService,
+    private val categoryService: CategoryService
 ) {
     /**
      * Neues Item für ownerId anlegen.
@@ -40,6 +42,11 @@ class ListingService(
             address = dto.address,
         )
 
+        if (dto.categoryId != null) {
+            val categoryEntity = categoryService.getCategoryById(dto.categoryId!!)
+            item.category = categoryEntity
+        }
+
         val saved = itemRepository.save(item)
         return mapToResponseDto(saved)
     }
@@ -50,6 +57,7 @@ class ListingService(
      */
     @Transactional
     open fun updateItem(ownerId: Long, itemId: Long, dto: ItemDto): ItemResponseDto {
+
         val item = itemRepository.findById(itemId)
             .orElseThrow { IllegalArgumentException("Item mit ID $itemId nicht gefunden") }
 
@@ -57,15 +65,17 @@ class ListingService(
             throw IllegalArgumentException("Nur der Owner kann dieses Item ändern")
         }
 
-        if (dto.address.isNullOrBlank()) {
-            val (lat, lon) = geocodingService.geocode(dto.address!!) ?: Pair(null, null)
-            item.latitude = lat
+        if (dto.address.isNotBlank()) {
+            val (lat, lon) = geocodingService
+                .geocode(dto.address)
+                ?: Pair(null, null)
+            item.latitude  = lat
             item.longitude = lon
-            item.address = dto.address
+            item.address   = dto.address!!
         } else {
-            item.latitude = null
+            item.latitude  = null
             item.longitude = null
-            item.address = null
+            item.address = ""
         }
 
         item.title = dto.title
@@ -73,6 +83,13 @@ class ListingService(
         item.priceAmount = dto.priceAmount
         item.priceUnit = dto.priceUnit
         item.updatedAt = Instant.now()
+
+        if (dto.categoryId != null) {
+            val categoryEntity = categoryService.getCategoryById(dto.categoryId!!)
+            item.category = categoryEntity
+        } else {
+            item.category = null
+        }
 
         val saved = itemRepository.save(item)
         return mapToResponseDto(saved)
@@ -123,6 +140,17 @@ class ListingService(
     }
 
     private fun mapToResponseDto(item: Item): ItemResponseDto {
+        val imageDtos: List<ImageDto> = item.images.map { img ->
+            ImageDto(
+                id = img.id!!,
+                filename = img.filename,
+                contentType = img.contentType,
+                size = img.size,
+                isThumbnail = img.isThumbnail,
+                uploadedAt = img.uploadedAt ?: Instant.now() // oder img.uploadedAt, je nach Entity‐Feld
+            )
+        }
+
         return ItemResponseDto(
             id = item.id!!,
             title = item.title,
@@ -135,7 +163,9 @@ class ListingService(
             updatedAt = item.updatedAt,
             longitude = item.longitude,
             latitude = item.latitude,
-            address = item.address
+            address = item.address,
+            categoryId = item.category?.id,
+            images = imageDtos,
         )
     }
 }

@@ -1,5 +1,6 @@
 package de.shareit.shareitcore.ui
 
+import de.shareit.shareitcore.application.CategoryService
 import de.shareit.shareitcore.application.ImageService
 import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
@@ -26,6 +27,7 @@ class ItemWebController(
     private val listingService: ListingService,
     private val userRepo: UserRepository,
     private val imageService: ImageService,
+    private val categoryService: CategoryService,
 ) {
 
     /**
@@ -64,6 +66,7 @@ class ItemWebController(
                 address = "")
         )
         model.addAttribute("editMode", false)
+        model.addAttribute("allCategories", categoryService.getAllCategories())
         return "item-form"
     }
 
@@ -140,11 +143,13 @@ class ItemWebController(
             priceUnit = existingDto.priceUnit,
             address = existingDto.address,
             latitude = existingDto.latitude,
-            longitude = existingDto.longitude
+            longitude = existingDto.longitude,
+            categoryId = existingDto.categoryId,
         )
 
         model.addAttribute("itemDto", itemDto)
         model.addAttribute("itemId", id)
+        model.addAttribute("allCategories", categoryService.getAllCategories())
         model.addAttribute("editMode", true)
 
         // NEU: Bestehende Bilder (inkl. Thumbnail-Info) ins Model packen
@@ -168,10 +173,13 @@ class ItemWebController(
     ): String {
         if (authToken == null) {
             model.addAttribute("errorMessage", "Du musst eingeloggt sein, um ein Item zu bearbeiten.")
+            model.addAttribute("allCategories", categoryService.getAllCategories())
+            model.addAttribute("itemId", id)
             return "item-form"
         }
 
         if (bindingResult.hasErrors()) {
+            model.addAttribute("allCategories", categoryService.getAllCategories())
             model.addAttribute("itemId", id)
             return "item-form"
         }

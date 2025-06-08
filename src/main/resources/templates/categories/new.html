@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Neue Kategorie anlegen</title>
+</head>
+<body>
+<h1>Neue Kategorie anlegen</h1>
+
+<form th:action="@{/categories}" th:object="${category}" method="post">
+    <!-- CSRF-Token für Spring Security -->
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+    <div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" th:field="*{name}" placeholder="Kategoriename" />
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name ist erforderlich</div>
+    </div>
+
+    <div>
+        <label for="parent">Übergeordnete Kategorie (optional):</label>
+        <select id="parent" th:field="*{parent.id}">
+            <option value="">-- keine --</option>
+            <option th:each="c : ${allCategories}"
+                    th:value="${c.id}"
+                    th:text="${c.name}"
+                    th:selected="${c.id} == ${category.parent?.id}">
+            </option>
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">Speichern</button>
+        <a th:href="@{/categories}">Abbrechen</a>
+    </div>
+</form>
+
+</body>
+</html>
