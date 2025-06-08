@@ -1,23 +1,17 @@
 package de.shareit.shareitcore.application
 
-
-import de.shareit.shareitcore.application.UserService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
 
 // 3) Security-Config: CustomOAuth2UserService einbinden
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 open class SecurityConfig(
     private val userService: UserService
 ) {
@@ -35,6 +29,7 @@ open class SecurityConfig(
             }
             .authorizeHttpRequests { auth ->
                 auth
+                    .requestMatchers("/api/items").permitAll()
                     // ► LISTEN: "/items" (z. B. Item-Übersicht) darf öffentlich bleiben
                     .requestMatchers("/items").permitAll()
 
@@ -43,7 +38,9 @@ open class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/items/new", "/items/*/edit").authenticated()
 
                     // ► SONSTIGES: z. B. Kategorien-Endpoints offenlassen
-                    .requestMatchers("/categories/**").permitAll()
+                    .requestMatchers(HttpMethod.GET,"/categories/new").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST,"/categories/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.GET,"/categories").permitAll()
 
                     // ► STATISCHE RESSOURCEN
                     .requestMatchers(

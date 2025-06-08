@@ -4,6 +4,7 @@ package de.shareit.shareitcore.ui
 import de.shareit.shareitcore.application.CategoryService
 import de.shareit.shareitcore.domain.model.Category
 import jakarta.validation.Valid
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.BindingResult
@@ -31,6 +32,7 @@ class CategoryController(
      * Wir übergeben ein leeres Category-Objekt als Binding-Target und die schon existierenden Kategorien
      * als Auswahlmöglichkeit für parent.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/new")
     fun showCreateForm(model: Model): String {
         model.addAttribute("category", Category(name = "", parent = null))
@@ -42,6 +44,7 @@ class CategoryController(
      * POST /categories – speichert eine neue Kategorie.
      * Validierung: Name darf nicht leer sein. Parent darf entweder leer sein oder auf eine existierende ID zeigen.
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     fun createCategory(
         @Valid @ModelAttribute("category") category: Category,

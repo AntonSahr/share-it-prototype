@@ -321,7 +321,7 @@ internal class ListingServiceTest {
             updatedAt = Instant.now(),
             latitude = null,
             longitude = null,
-            address = null
+            address = ""
         )
         val item2 = Item(
             id = 102L,
@@ -446,7 +446,7 @@ internal class ListingServiceTest {
             updatedAt = Instant.now(),
             latitude = null,
             longitude = null,
-            address = null
+            address = ""
         )
         val itemB = Item(
             id = 302L,
@@ -459,7 +459,7 @@ internal class ListingServiceTest {
             updatedAt = Instant.now(),
             latitude = null,
             longitude = null,
-            address = null
+            address = ""
         )
         `when`(itemRepository.findByOwnerId(ownerId)).thenReturn(listOf(itemA, itemB))
 
@@ -508,7 +508,7 @@ internal class ListingServiceTest {
             updatedAt = Instant.now(),
             latitude = null,
             longitude = null,
-            address = null
+            address = ""
         )
         `when`(itemRepository.findById(itemId)).thenReturn(Optional.of(item))
 
@@ -554,7 +554,7 @@ internal class ListingServiceTest {
             updatedAt = Instant.now(),
             latitude = null,
             longitude = null,
-            address = null
+            address = ""
         )
         `when`(itemRepository.findById(701L)).thenReturn(Optional.of(item))
 
