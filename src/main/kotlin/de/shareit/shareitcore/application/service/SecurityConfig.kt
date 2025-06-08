@@ -42,6 +42,9 @@ open class SecurityConfig(
                     .requestMatchers(HttpMethod.POST,"/categories/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET,"/categories").permitAll()
 
+                    // SEARCH
+                    .requestMatchers(HttpMethod.GET,"/search").permitAll()
+
                     // ► STATISCHE RESSOURCEN
                     .requestMatchers(
                         "/", "/css/**", "/js/**", "/error",

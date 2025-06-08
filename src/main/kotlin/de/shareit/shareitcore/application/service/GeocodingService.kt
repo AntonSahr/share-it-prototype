@@ -15,6 +15,7 @@ class GeocodingService {
         val display_name: String
     )
 
+    // returns (lat, lon)
     fun geocode(address: String): Pair<BigDecimal, BigDecimal>? {
         // Nominatim-Endpoint:
         val url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${UriUtils.encode(address, "UTF-8")}"
