@@ -1,7 +1,5 @@
 package de.shareit.shareitcore.application.service
 
-import de.shareit.shareitcore.application.GeocodingService
-import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.model.PriceUnit

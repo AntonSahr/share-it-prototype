@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.application
+package de.shareit.shareitcore.application.service
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

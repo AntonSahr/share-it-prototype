@@ -1,7 +1,7 @@
 package de.shareit.shareitcore
 
 import com.ninjasquad.springmockk.MockkBean
-import de.shareit.shareitcore.application.CategoryService
+import de.shareit.shareitcore.application.service.CategoryService
 import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

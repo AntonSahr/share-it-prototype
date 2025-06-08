@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.application
+package de.shareit.shareitcore.application.service
 
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate

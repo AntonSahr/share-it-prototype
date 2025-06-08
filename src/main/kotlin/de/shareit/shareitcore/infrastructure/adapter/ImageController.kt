@@ -1,5 +1,5 @@
 package de.shareit.shareitcore.infrastructure.adapter
-import de.shareit.shareitcore.application.ImageService
+import de.shareit.shareitcore.application.service.ImageService
 import de.shareit.shareitcore.ui.dto.ImageDto
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType

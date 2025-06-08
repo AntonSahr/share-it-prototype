@@ -1,8 +1,8 @@
 package de.shareit.shareitcore.ui
 
-import de.shareit.shareitcore.application.CategoryService
-import de.shareit.shareitcore.application.ImageService
-import de.shareit.shareitcore.application.ListingService
+import de.shareit.shareitcore.application.service.CategoryService
+import de.shareit.shareitcore.application.service.ImageService
+import de.shareit.shareitcore.application.service.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.model.PriceUnit
 import de.shareit.shareitcore.domain.service.UserRepository
@@ -10,7 +10,6 @@ import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.web.dto.ItemDto
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model

@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.application
+package de.shareit.shareitcore.application.service
 
 import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.service.ItemRepository

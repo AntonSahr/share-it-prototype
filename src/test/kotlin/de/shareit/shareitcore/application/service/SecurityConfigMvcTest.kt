@@ -1,7 +1,6 @@
 package de.shareit.shareitcore.application.service
 
 
-import de.shareit.shareitcore.application.SecurityConfig
 import de.shareit.shareitcore.ui.ItemWebController
 import de.shareit.shareitcore.ui.ProfileController
 import org.junit.jupiter.api.Test
