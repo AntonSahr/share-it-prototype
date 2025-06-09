@@ -7,6 +7,6 @@ data class ItemSearchParams(
     val categoryId: Long? = null,
     val address: String? = null,
     val radiusKm: Double? = null,
-    val latitude: BigDecimal? = null,
-    val longitude: BigDecimal? = null,
+    var latitude: BigDecimal? = null,
+    var longitude: BigDecimal? = null,
 )

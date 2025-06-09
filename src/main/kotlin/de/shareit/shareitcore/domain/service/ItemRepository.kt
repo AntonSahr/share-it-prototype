@@ -19,7 +19,7 @@ interface ItemRepository : JpaRepository<Item, Long>, JpaSpecificationExecutor<I
       AND (
         (:lat IS NULL OR :lng IS NULL OR :radius IS NULL) OR (
             latitude IS NOT NULL AND longitude IS NOT NULL AND
-            6371000 * acos(
+            6371 * acos(
               cos(radians(:lat)) * cos(radians(latitude)) * 
               cos(radians(longitude) - radians(:lng)) +
               sin(radians(:lat)) * sin(radians(latitude))

@@ -50,8 +50,8 @@
                 <div id="map" style="height: 300px;"></div>
             </div>
 
-            <input type="hidden" id="lat" name="lat" th:value="${params.latitude}" />
-            <input type="hidden" id="lng" name="lng" th:value="${params.longitude}" />
+            <input type="hidden" name="latitude" id="lat" th:value="${params.latitude ?: ''}" />
+            <input type="hidden" name="longitude" id="lng" th:value="${params.longitude ?: ''}" />
 
             <div class="form-group">
                 <label for="radiusKm">Radius (km)</label>

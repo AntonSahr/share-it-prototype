@@ -5,9 +5,8 @@ import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.service.ItemRepository
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.ui.dto.toDto
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.math.BigDecimal
-import kotlin.math.*
 
 
 @Service
@@ -15,16 +14,28 @@ class SearchService(
     private val itemRepository: ItemRepository,
     private val geocodingService: GeocodingService,
 ) {
-    fun search(params: ItemSearchParams): List<Item> {
+    private val logger = LoggerFactory.getLogger(SearchService::class.java)
 
-        val coordinates: Pair<BigDecimal, BigDecimal>? = when {
-            params.latitude != null && params.longitude != null -> Pair(params.latitude, params.longitude)
-            !params.address.isNullOrBlank() -> geocodingService.geocode(params.address)
-            else -> null
-        }
+
+    fun search(params: ItemSearchParams): List<Item> {
+        logger.debug("Suchanfrage empfangen mit Parametern: {}", params)
+
+        val coordinates = params.address?.takeIf { it.isNotBlank() }
+            ?.let { address ->
+                try {
+                    val geo = geocodingService.geocodeAddress(address)
+                    logger.debug("Geocoding erfolgreich: {} -> {}", address, geo)
+                    geo
+                } catch (e: Exception) {
+                    logger.debug("Geocoding fehlgeschlagen für Adresse: $address", e)
+                    null
+                }
+            }
 
         val lat = coordinates?.first
         val lng = coordinates?.second
+
+        logger.debug("Latitude: {}, Longitude: {}", lat, lng)
 
        val result = itemRepository
            .searchItems(
