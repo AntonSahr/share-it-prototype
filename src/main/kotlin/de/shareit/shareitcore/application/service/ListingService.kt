@@ -1,8 +1,9 @@
-package de.shareit.shareitcore.application
+package de.shareit.shareitcore.application.service
 
 import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.service.ItemRepository
 import de.shareit.shareitcore.domain.service.UserRepository
+import de.shareit.shareitcore.application.service.GeocodingService
 import de.shareit.shareitcore.ui.dto.ImageDto
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import de.shareit.shareitcore.web.dto.ItemDto
@@ -26,7 +27,7 @@ class ListingService(
         val owner = userRepository.findById(ownderId)
             .orElseThrow { RuntimeException("Owner mit ID $ownderId nicht gefunden") }
 
-        val (lat, lon) = geocodingService.geocode(dto.address?: "")
+        val (lat, lon) = geocodingService.geocodeAddress(dto.address)
             ?: Pair(null, null)
 
         val item = Item(
@@ -67,7 +68,7 @@ class ListingService(
 
         if (dto.address.isNotBlank()) {
             val (lat, lon) = geocodingService
-                .geocode(dto.address)
+                .geocodeAddress(dto.address)
                 ?: Pair(null, null)
             item.latitude  = lat
             item.longitude = lon

@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.application
+package de.shareit.shareitcore.application.service
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -41,6 +41,9 @@ open class SecurityConfig(
                     .requestMatchers(HttpMethod.GET,"/categories/new").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST,"/categories/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.GET,"/categories").permitAll()
+
+                    // SEARCH
+                    .requestMatchers(HttpMethod.GET,"/search").permitAll()
 
                     // ► STATISCHE RESSOURCEN
                     .requestMatchers(

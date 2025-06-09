@@ -1,5 +1,6 @@
 package de.shareit.shareitcore.ui.dto
 
+import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.model.PriceUnit
 import java.math.BigDecimal
 import java.time.Instant

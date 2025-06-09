@@ -10,8 +10,7 @@ data class ImageEntity(
     val id: Long = 0,
 
     // Byte‐Daten des Bildes. In H2: BLOB; in Postgres: bytea
-    @Lob
-    @Column(name = "data", nullable = false, columnDefinition = "BLOB")
+    @Column(name = "data", nullable = false, columnDefinition = "BYTEA")
     val data: ByteArray,
 
     @Column(name = "filename", nullable = false)

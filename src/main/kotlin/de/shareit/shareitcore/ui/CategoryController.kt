@@ -1,7 +1,7 @@
 package de.shareit.shareitcore.ui
 
 
-import de.shareit.shareitcore.application.CategoryService
+import de.shareit.shareitcore.application.service.CategoryService
 import de.shareit.shareitcore.domain.model.Category
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize

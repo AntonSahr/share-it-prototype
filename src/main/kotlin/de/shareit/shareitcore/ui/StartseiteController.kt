@@ -1,12 +1,10 @@
 package de.shareit.shareitcore.ui
 
-import de.shareit.shareitcore.application.ListingService
-import de.shareit.shareitcore.domain.model.Item
+import de.shareit.shareitcore.application.service.ListingService
 import de.shareit.shareitcore.ui.dto.ItemResponseDto
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestParam
 import kotlin.collections.map
 
 @Controller

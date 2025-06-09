@@ -29,9 +29,15 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation ("org.springframework.boot:spring-boot-starter-webflux")
 
 
-    runtimeOnly("com.h2database:h2")
+
+    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-database-postgresql")
+
+    runtimeOnly("org.postgresql:postgresql:42.5.0")
+    //runtimeOnly("com.h2database:h2")
 
     testImplementation("org.springframework.security:spring-security-test:6.5.0")
     testImplementation("io.mockk:mockk:1.14.2")

@@ -1,6 +1,6 @@
 package de.shareit.shareitcore.application.service.UserService
 
-import de.shareit.shareitcore.application.UserService
+import de.shareit.shareitcore.application.service.UserService
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.service.UserRepository
 import org.junit.jupiter.api.Assertions.*

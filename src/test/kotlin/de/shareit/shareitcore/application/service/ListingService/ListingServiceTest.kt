@@ -1,7 +1,5 @@
 package de.shareit.shareitcore.application.service
 
-import de.shareit.shareitcore.application.GeocodingService
-import de.shareit.shareitcore.application.ListingService
 import de.shareit.shareitcore.domain.model.AppUser
 import de.shareit.shareitcore.domain.model.Item
 import de.shareit.shareitcore.domain.model.PriceUnit
@@ -59,7 +57,7 @@ internal class ListingServiceTest {
         val address = "Musterstraße 1, 12345 Stadt"
         val lat = BigDecimal("52.520008")
         val lon = BigDecimal("13.404954")
-        `when`(geocodingService.geocode(address)).thenReturn(Pair(lat, lon))
+        `when`(geocodingService.geocodeAddress(address)).thenReturn(Pair(lat, lon))
 
         val dto = ItemDto(
             title = "Bohrmaschine",
@@ -177,7 +175,7 @@ internal class ListingServiceTest {
         // Stub: geocodingService.geocode("") liefert neue Koordinaten
         val newLat = BigDecimal("48.135125")
         val newLon = BigDecimal("11.581981")
-        `when`(geocodingService.geocode("")).thenReturn(Pair(newLat, newLon))
+        `when`(geocodingService.geocodeAddress("")).thenReturn(Pair(newLat, newLon))
 
         // 4) itemRepository.save(...) soll das übergebene Item einfach zurückliefern
         doAnswer { invocation ->
