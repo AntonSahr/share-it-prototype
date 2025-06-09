@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/items/{itemId}/images")
-class ImageController(
+class ImageRestController(
     private val imageService: ImageService
 ) {
 
