@@ -1,4 +1,4 @@
-package de.shareit.shareitcore.infrastructure.adapter
+package de.shareit.shareitcore.infrastructure.adapter.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

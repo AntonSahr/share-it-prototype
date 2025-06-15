@@ -1,12 +1,17 @@
 package de.shareit.shareitcore.infrastructure.adapter
+
 import de.shareit.shareitcore.application.service.ImageService
+import de.shareit.shareitcore.domain.model.ImageEntity
 import de.shareit.shareitcore.ui.dto.ImageDto
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.server.ResponseStatusException
 
+@CrossOrigin(origins = ["http://localhost:5173"])
 @RestController
 @RequestMapping("/api/items/{itemId}/images")
 class ImageRestController(
@@ -14,53 +19,28 @@ class ImageRestController(
 ) {
 
     /**
-     * 1. Mehrere Bilder uploaden (multipart/form-data)
+     * 1. Upload mehrerer Bilder
      *    POST /api/items/{itemId}/images
      */
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImages(
         @PathVariable itemId: Long,
         @RequestParam("files") files: List<MultipartFile>
-    ): ResponseEntity<List<ImageDto>> {
-        val savedImages = imageService.uploadImages(itemId, files)
-        // DTO für die Antwort (ohne Raw-Bytes)
-        val dtos = savedImages.map { img ->
-            ImageDto(
-                id = img.id,
-                filename = img.filename,
-                contentType = img.contentType,
-                size = img.size,
-                isThumbnail = img.isThumbnail,
-                uploadedAt = img.uploadedAt
-            )
-        }
-        return ResponseEntity.ok(dtos)
-    }
+    ): List<ImageDto> =
+        imageService.uploadImages(itemId, files)
+            .map { img -> img.toDto() }
 
     /**
-     * 2. Liste aller Bilder‐Metadaten für ein Item
+     * 2. Liste aller Bild-Metadaten
      *    GET /api/items/{itemId}/images
      */
     @GetMapping
-    fun listImages(
-        @PathVariable itemId: Long
-    ): ResponseEntity<List<ImageDto>> {
-        val images = imageService.listImagesForItem(itemId)
-        val dtos = images.map { img ->
-            ImageDto(
-                id = img.id,
-                filename = img.filename,
-                contentType = img.contentType,
-                size = img.size,
-                isThumbnail = img.isThumbnail,
-                uploadedAt = img.uploadedAt
-            )
-        }
-        return ResponseEntity.ok(dtos)
-    }
+    fun listImages(@PathVariable itemId: Long): List<ImageDto> =
+        imageService.listImagesForItem(itemId)
+            .map { img -> img.toDto() }
 
     /**
-     * 3. Ein einzelnes Bild‐Bytearray (Streaming)
+     * 3. Stream eines Bild-Bytearrays
      *    GET /api/items/{itemId}/images/{imageId}/data
      */
     @GetMapping("/{imageId}/data")
@@ -69,11 +49,12 @@ class ImageRestController(
         @PathVariable imageId: Long
     ): ResponseEntity<ByteArray> {
         val data = imageService.getImageData(itemId, imageId)
-        val imageEntity = imageService.listImagesForItem(itemId).find { it.id == imageId }
-            ?: throw IllegalArgumentException("Bild nicht gefunden")
+        val img = imageService.listImagesForItem(itemId)
+            .find { it.id == imageId }
+            ?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Bild nicht gefunden")
 
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_TYPE, imageEntity.contentType)
+            .header(HttpHeaders.CONTENT_TYPE, img.contentType)
             .body(data)
     }
 
@@ -85,17 +66,18 @@ class ImageRestController(
     fun markThumbnail(
         @PathVariable itemId: Long,
         @PathVariable imageId: Long
-    ): ResponseEntity<ImageDto> {
-        val updatedImage = imageService.markAsThumbnail(itemId, imageId)
-        val dto = ImageDto(
-            id = updatedImage.id,
-            filename = updatedImage.filename,
-            contentType = updatedImage.contentType,
-            size = updatedImage.size,
-            isThumbnail = updatedImage.isThumbnail,
-            uploadedAt = updatedImage.uploadedAt
-        )
-        return ResponseEntity.ok(dto)
+    ): ImageDto {
+        val updated = imageService.markAsThumbnail(itemId, imageId)
+        return updated.toDto()
     }
-}
 
+    // Hilfsmethode: Entity -> DTO
+    private fun ImageEntity.toDto() = ImageDto(
+        id = this.id,
+        filename = this.filename,
+        contentType = this.contentType,
+        size = this.size,
+        isThumbnail = this.isThumbnail,
+        uploadedAt = this.uploadedAt
+    )
+}
